@@ -46,7 +46,7 @@
                 </li>
                 <li class="dropdown topbar-item">
                     <a class="nav-link dropdown-toggle arrow-none nav-icon" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                        <img src="{{ asset('admin-assets/img/avatar-1.jpg') }}" alt="" class="thumb-lg rounded-circle">
+                        <img src="{{ asset('admin-assets/images/avatar-1.jpg') }}" alt="" class="thumb-lg rounded-circle">
                     </a>
                     <div class="dropdown-menu dropdown-menu-end py-0" style="">
                         <div class="d-flex align-items-center dropdown-item py-2 bg-secondary-subtle">                                    

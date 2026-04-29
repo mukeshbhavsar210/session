@@ -51,7 +51,7 @@
             @endforeach
         </ul>
 
-        <div class="tab-content mt-2">
+        <div class="tab-content">
             @foreach (['Dinein', 'Takeaway', 'Delivery'] as $type)
                 <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="{{ strtolower($type) }}">
                     @php
@@ -62,10 +62,10 @@
                         <thead class="table-light">
                             <tr>
                                 <th class="border-top-0">Order#</th>                            
-                                <th class="border-top-0 text-end" width="50">Qty</th>
-                                <th class="border-top-0 text-end" width="100">Total</th>
-                                <th class="border-top-0 text-end" width="100">Order on</th>
-                                <th class="border-top-0 text-end" width="100">Status</th>
+                                <th class="border-top-0" width="250">Notes</th>
+                                <th class="border-top-0 text-end" width="100">Qty</th>
+                                <th class="border-top-0 text-end" width="130">Total</th>                                
+                                <th class="border-top-0 text-end" width="130">Status</th>
                             </tr>
                         </thead>                     
                         <tbody>
@@ -86,15 +86,15 @@
                                             </a>   
                                             
                                             <div class="flex-grow-1 text-truncate">
-                                                <h5 class="product-title">{{ $value->seat->table_name }}</h5>                                                    
-                                                <p class="text-muted tiny-font">Notes: {{ $value->notes }}</p>
-                                                <p class="text-muted tiny-font">Ready Time: {{ $value->ready_time }}</p>
+                                                <h5 class="product-title">{{ $value->seat->table_name }}</h5>                                                                                                    
+                                                <p class="text-muted tiny-font">{{ $value->ready_time }}</p>                                                
+                                                <p class="text-muted tiny-font">{{ \Carbon\Carbon::parse($value->created_at)->format('d M, Y, h:i A') }}</p>
                                             </div>                                                
                                         </div>
                                     </td>
-                                    <td class="text-end">{{ $value->items_sum_qty }}</td>
-                                    <td class="text-end"><h5>₹{{ round($value->total) }}</h5></td>
-                                    <td class="text-end">{{ \Carbon\Carbon::parse($value->created_at->format('d M, Y')) }}</td>
+                                    <td>{{ $value->notes }}</td>
+                                    <td class="text-end">{{ $value->items->sum('qty') }}</td>
+                                    <td class="text-end"><h5>₹{{ round($value->total) }}</h5></td>                                    
                                     <td class="text-end">
                                         @if ($value->status == 'running')
                                             <span class="badge bg-danger">Running</span>
@@ -114,7 +114,11 @@
                                     </td>                                        
                                 </tr>
                             @empty
-                                <p>No {{ $type }} orders found</p>
+                                <tr>
+                                    <td>                                        
+                                        No <b>{{ $type }}</b> orders found
+                                    </td>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>

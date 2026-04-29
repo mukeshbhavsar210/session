@@ -23,7 +23,7 @@
                 @foreach ($categories as $value)
                     <div class="accordion-item">                        
                         <h2 class="accordion-header" id="heading_{{ $value->id }}">                            
-                            <button class="accordion-button p-xl-1 {{ !$loop->first ? 'collapsed' : '' }}" 
+                            <button class="accordion-button p-xl-2 {{ !$loop->first ? 'collapsed' : '' }}" 
                                     type="button" 
                                     data-bs-toggle="collapse" 
                                     data-bs-target="#collapse_{{ $value->id }}" 
@@ -31,7 +31,7 @@
                                     aria-controls="collapse_{{ $value->id }}">
 
                                     @if($value->image)
-                                        <img src="{{ asset('uploads/category/'.$value->image) }}" style="height: 50px; margin-right:10px;" class="shadow-sm rounded-circle" />
+                                        <img src="{{ asset('uploads/category/'.$value->image) }}" style="height: 60px; width:60px; margin-right:10px;" class="shadow-sm rounded-circle" />
                                         @else
                                         <img src="{{ asset('admin-assets/img/default-150x150.png') }}" alt="" height="90" class="me-3 align-self-center rounded" />
                                     @endif
@@ -51,42 +51,24 @@
                             data-bs-parent="#categoryAccordion">
 
                             <div class="accordion-body">
-                                <div class="chip-wrapper">                                    
-                                    <a href="javascript:0" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMenuModal_{{ $value->id }}">Create Item</a>
-
-                                    <div class="modal fade" id="addMenuModal_{{ $value->id }}" tabindex="-1" aria-labelledby="addMenuModalLabel_{{ $value->id }}" aria-hidden="true" style="display: none;">
-                                        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="exampleModalLabel">Add Menu</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>                
-                                                </div>
-
-                                                <form action="{{ route('menu.store') }}" method="post">
-                                                    <div class="modal-body">
-                                                        @csrf
-                                                        <div class="form-group">
-                                                            <label>Category</label>
-                                                            <input type="text" readonly value="{{ $value->name }}"  class="form-control">
-                                                        </div>
-                                                        <input type="hidden" name="category" value="{{ $value->id }}">
-                                                        
-                                                        <div class="form-group">
-                                                            <label>Name</label>
-                                                            <input type="text" name="name" class="form-control slug-source" data-target="#slug">
-                                                            <input type="hidden" readonly name="slug" id="slug" class="form-control">
-                                                            @error('name')
-                                                                <p>Please add Menu item</p>
-                                                            @enderror
-                                                        </div>
-                                                        
-                                                        <button type="submit" class="btn btn-primary mt-2">Create</button>
-                                                    </div>
-                                                </form>
-                                            </div>
+                                <form action="{{ route('menu.store') }}" method="post">                                        
+                                    @csrf
+                                    <input type="hidden" name="category" value="{{ $value->id }}">
+                                    
+                                    <div class="mb-2">
+                                        <div class="input-group">
+                                            <input type="text" name="name" id="name" class="form-control slug-source" data-target="#slug" placeholder="Enter menu name">
+                                            <input type="hidden" name="slug" id="slug">
+                                            <button type="submit" class="btn btn-primary">Create</button>
                                         </div>
-                                    </div>
 
+                                        @error('name')
+                                            <small class="text-danger">Please add Menu item</small>
+                                        @enderror
+                                    </div>
+                                </form>
+
+                                <div class="chip-wrapper">                                                                        
                                     @if ($value->menus->count())                                    
                                         @foreach ($value->menus as $menu)
                                             <div class="color-chip">
@@ -106,8 +88,6 @@
         </div>
     </div>
 </div>
-
-
                     
 <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true" style="display: none;">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -128,12 +108,11 @@
                 </div> 
 
                 <div class="form-group">
-                    <label for="image">Picture</label>
+                    <label for="image">Item Picture</label>
                     <input type="file" class="form-control" name="image" />
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 <button type="submit" class="btn btn-primary">Create</button>
             </div>
         </form>

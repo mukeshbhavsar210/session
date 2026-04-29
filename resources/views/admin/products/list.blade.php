@@ -36,7 +36,7 @@
                             </div>
                         </div>
                     </form>
-                    <a href="javascript:0" class="btn btn-primary float-right" data-toggle="modal" data-target="#addProducts">Add</a>
+                    <a href="javascript:0" class="btn btn-primary float-right" data-bs-toggle="modal" data-bs-target="#addProductModal">Add</a>                    
                 </div>
                 {{-- <form action="{{ route('views.store') }}" method="post" >
             @csrf
@@ -56,8 +56,8 @@
                     <thead class="table-light">
                         <tr>
                             <th class="border-top-0">Product</th>
-                            <th class="border-top-0 text-end" width="200">Price</th>
-                            <th class="border-top-0 text-end" width="200">Category</th>
+                            <th class="border-top-0" width="300">Description</th>
+                            <th class="border-top-0 text-end" width="150">Price</th>
                             <th class="border-top-0 text-end" width="100">Status</th>
                             <th class="border-top-0 text-end" width="100">Action</th>
                         </tr>
@@ -80,12 +80,17 @@
                                                 @endif
                                             </a>
                                             <div class="flex-grow-1 text-truncate">
-                                                <h5 class="product-title">{{ $value->name }}</h5>                                                
+                                                <h5 class="product-title">{{ $value->name }}</h5>    
+                                                <p class="text-muted tiny-font">{{ $value->category->name }}</p>
+                                                <p class="text-muted tiny-font">{{ $value->veg_nonveg }}</p>
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="text-end">₹{{ round($value->price) }}</td>
-                                    <td class="text-end">{{ $value->category->name }}</td>
+                                    <td>{{ $value->description }}</td>
+                                    <td class="text-end">
+                                        <h5 class="mb-0">₹{{ round($value->price) }}</h5>
+                                        <p class="text-muted tiny-font"><del>₹{{ round($value->compare_price) }}</del></p>
+                                    </td>
                                     <td class="text-end">
                                         <div class="pull-right">
                                             @if ($value->status == 1)  
@@ -127,30 +132,27 @@
         </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal fade drawer right-align" id="addProducts" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
+<div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">Add Product</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-            </div>
-            <form {{ route('products.store') }} method="post" enctype="multipart/form-data">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <form {{ route('products.store') }} method="post" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-12 col-12">
-                            <div class="form-group mb-0">
-                                <label for="name">Item Name</label>
-                            </div>
                             <div class="produtName">
-                                <div>
-                                    <input type="text" name="name" id="name" class="form-control" placeholder="Name">
-                                    <p class="error"></p>
-                                    <input type="hidden" name="slug" id="slug" class="form-control" placeholder="slug">
+                                <div class="form-group mb-0">
+                                    <label for="name">Item Name</label>
+                                    <input type="text" name="name" id="name" class="form-control slug-source" placeholder="Name" data-target="#slug" >
+                                    <input type="hidden" readonly name="slug" id="slug" class="form-control">
+                                    <p class="error"></p>                                    
                                 </div>
+
                                 <div class="vegContainer">
                                     <div class="btn-group" name="veg_nonveg" id="options" data-toggle="buttons">
                                         <label class="btn btn-default active">
@@ -235,31 +237,14 @@
                     <button type="submit" class="btn btn-primary">Create</button>
                 </div>
             </form>
-            </div>
         </div>
     </div>
+</div>
+    
 @endsection
 
 @section('customJs')
 <script>
-    $('#name').change(function(){
-        element = $(this);
-        $("button[type=submit]").prop('disabled', true);
-        $.ajax({
-            url: '{{ route("getSlug") }}',
-            type: 'get',
-            data: {title: element.val()},
-            dataType: 'json',
-            success: function(response){
-                $("button[type=submit]").prop('disabled', false);
-                if(response["status"] == true){
-                    $("#slug").val(response["slug"]);
-                }
-            }
-        });
-    })
-
-
     $("#category").change(function(){
         var category_id = $(this).val();
         $.ajax({

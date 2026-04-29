@@ -42,8 +42,6 @@ class OrderController extends Controller {
         $orderItems = OrderItem::where('order_id',$orderId)->get();  
         $products = Product::latest('id');      
 
-        //dd($order);
-        
         return view('admin.orders.detail',[
             'order' => $order,
             'orderItems' => $orderItems,
