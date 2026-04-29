@@ -157,6 +157,6 @@ class MenuController extends Controller
         $menu = Menu::find($id);
         $menu->delete();
 
-        return redirect()->route('menus.index')->with('success','Menu deleted successfully.');
+        return redirect()->route('categories.index')->with('success','Menu deleted successfully.');
     }
 }

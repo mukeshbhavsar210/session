@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en" data-bs-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -134,12 +134,12 @@
 <script src="{{ asset('admin-assets/js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('admin-assets/js/simplebar.min.js') }}"></script>
 <script src="{{ asset('admin-assets/js/app.js') }}"></script>
-<script src="{{ asset('admin-assets/js/admin_documentReady.js') }}"></script>
+{{-- <script src="{{ asset('admin-assets/js/admin_documentReady.js') }}"></script>
 <script src="{{ asset('admin-assets/plugins/dropzone/min/dropzone.min.js') }}"></script>
 <script src="{{ asset('admin-assets/plugins/summernote/summernote-bs4.min.js') }}"></script>
 <script src="{{ asset('admin-assets/plugins/select2/js/select2.min.js') }}"></script>
 <script src="{{ asset('admin-assets/js/datetimepicker.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> --}}
 
 <script type="text/javascript">
     $(document).ready(function () {            
@@ -173,6 +173,30 @@
     $(document).ready(function(){        
         $(".summernote").summernote({
             //height:250;
+        });
+    });
+
+     $(document).on('input', '.slug-source', function () {
+        let element = $(this);
+        let form = element.closest('form');
+        let target = element.data('target');
+        let submitBtn = form.find("button[type=submit]");
+
+        submitBtn.prop('disabled', true);
+
+        $.ajax({
+            url: '{{ route("getSlug") }}',
+            type: 'GET',
+            data: { title: element.val() },
+            dataType: 'json',
+            success: function (response) {
+
+                submitBtn.prop('disabled', false);
+
+                if (response.status) {
+                    form.find(target).val(response.slug);
+                }
+            }
         });
     });
 
