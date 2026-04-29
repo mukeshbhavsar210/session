@@ -2,215 +2,125 @@
 
 @section('content')
 
-<section class="content-header">
-    <div class="row">
-        <div class="col-sm-6">
-            <h1>Orders <span class="count">{{ $orderCount }}</span></h1>
-        </div>
-        <div class="col-sm-6 text-right">
-
-        </div>
-    </div>
-</section>
-
 @include('admin.layouts.message')
+
 <div class="card">
-    <form action="" method="get" >
-        <div class="card-header">
-            <div class="card-title">
-                <button type="button" onclick="window.location.href='{{ route('orders.index') }}'" class="btn btn-default btn-sm">Reset</button>
+    <div class="card-body">
+        <div class="row">                
+            <div class="col-sm-8 col-12">
+                <div class="page-title"> 
+                    <h4>Orders</h4>                           
+                    <span class="counts">{{ $totalOrders }}</span>
+                </div>
             </div>
+            <div class="col-sm-4 col-12 float-end">
+                <div class="flexContainer">
+                    <form action="" method="get" >
+                        <div class="d-flex">
+                            <div class="card-title mr-3">
+                                <a href="javascript:0" onclick="window.location.href='{{ route('orders.index') }}'" class="refresh-icon" >
+                                    <span class="sprites"></span>                                            
+                                </button>
+                            </div>
 
-            <div class="card-tools">
-                <div class="input-group input-group" style="width: 250px;">
-                    <input value="{{ Request::get('keyword') }}" type="text" name="keyword" class="form-control float-right" placeholder="Search">
-
-                    <div class="input-group-append">
-                    <button type="submit" class="btn btn-default">
-                        <i class="fas fa-search"></i>
-                    </button>
-                    </div>
+                             <div class="card-tools">
+                                <div class="input-group input-group searchMain" >
+                                    <input value="{{ Request::get('keyword') }}" type="text" name="keyword" class="form-control float-right" placeholder="Search">
+        
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn">
+                                            <i class="iconoir-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
-    </form>
-
-    <div class="card-body table-responsive mt-3 p-0">
+    
         <ul class="nav nav-tabs" role="tablist">
-            @if($dineinCount > 0)
+            @foreach (['Dinein', 'Takeaway', 'Delivery'] as $type)
                 <li class="nav-item">
-                    <a class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab">Dinein - (<b>{{ $dineinCount }}</b>)</a>
+                    <a class="nav-link {{ $loop->first ? 'active' : '' }}" data-bs-toggle="tab"  href="#{{ strtolower($type) }}" role="tab" aria-selected="true">
+                        {{ $type }}
+                        <span class="badge rounded text-blue bg-blue-subtle">{{ $orders->where('order_type', $type)->count() }}</span>
+                    </a>                        
                 </li>
-            @endif
-
-            @if($takeawayCount > 0)
-                <li class="nav-item">
-                    <a class="nav-link" data-toggle="tab" href="#tabs-2" role="tab">Takeaway - (<b>{{ $takeawayCount }}</b>)</a>
-                </li>
-            @endif
-
-            @if($deliveryCount > 0)
-                <li class="nav-item">
-                    <a class="nav-link" data-toggle="tab" href="#tabs-3" role="tab">Delivery - (<b>{{ $deliveryCount }}</b>)</a>
-                </li>
-            @endif
+            @endforeach
         </ul>
 
-        <div class="tab-content">
-            @if($dineinCount > 0)
-                <div class="tab-pane active" id="tabs-1" role="tabpanel">
-                    <table class="table table-hover text-nowrap">
-                        <thead>
+        <div class="tab-content mt-2">
+            @foreach (['Dinein', 'Takeaway', 'Delivery'] as $type)
+                <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="{{ strtolower($type) }}">
+                    @php
+                        $filteredOrders = $orders->where('order_type', $type);
+                    @endphp
+                
+                    <table class="table mb-0">
+                        <thead class="table-light">
                             <tr>
-                                <th>Order#</th>
-                                <th>Ordered items</th>
-                                <th>Ready time</th>
-                                <th>Table</th>
-                                <th>Notes</th>                                    
-                                <th>Amount</th>
-                                <th>Total</th>
-                                <th>Date</th>
+                                <th class="border-top-0">Order#</th>                            
+                                <th class="border-top-0 text-end" width="50">Qty</th>
+                                <th class="border-top-0 text-end" width="100">Total</th>
+                                <th class="border-top-0 text-end" width="100">Order on</th>
+                                <th class="border-top-0 text-end" width="100">Status</th>
                             </tr>
-                        </thead>
+                        </thead>                     
                         <tbody>
-                            @if ($orderItems->isNotEmpty())
-                                @foreach ($orderItems as $value)
-                                    @if($value->orders->order_type == 'Dinein')
-                                        <tr>
-                                            <td><a href="{{ route('orders.detail',$value->order_id) }}"><img style="width: 30px; border-radius:100px; margin-right:5px;" src="{{ asset('uploads/product/'.$value->image) }}" ></a> {{ $value->order_id }}</td>
-                                            <td>{{ $value->name }} - {{ $value->qty }}</td>
-                                            <td>{{ $value->orders->ready_time }}</td>
-                                            <td>
-                                                {{-- {{ $value->seat->table_name }}  --}}
-                                                @if ($value->orders->status == 'running')
-                                                    <span class="badge bg-danger">Running</span>
-                                                @elseif ($value->orders->status == 'pending')
-                                                    <svg class="text-danger h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                    </svg>
-                                                @elseif ($value->orders->status == 'shipped')
-                                                    <span class="badge bg-info">Shipped</span>
-                                                @elseif ($value->orders->status == 'delivered')
-                                                    <svg class="text-success-500 h-6 w-6 text-success" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                    </svg>
+                            @forelse ($filteredOrders as $value)
+                                <tr>
+                                    <td>
+                                        <div class="product-row">
+                                            @php
+                                                $productImage = optional($value->items->first()?->product?->product_images->first());
+                                            @endphp
+
+                                            <a href="{{ route('orders.detail',$value->id) }}">
+                                                @if (!empty($productImage->image))
+                                                    <img src="{{ asset('uploads/product/'.$productImage->image) }}" height="90" class="me-3 rounded">
                                                 @else
-                                                    <span class="badge bg-danger">Cancelled</span>
+                                                    <img src="{{ asset('admin-assets/img/default-150x150.png') }}" height="90" class="me-3 rounded">
                                                 @endif
-                                            </td>
-                                            <td>{{ $value->orders->notes }}</td>
-                                            <td>₹ {{ number_format($value->price,2) }}</td>
-                                            <td>₹ {{ number_format($value->price*$value->qty,2) }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($value->created_at->format('d M, Y')) }}</td>
-                                        </tr>
-                                    @endif
-                                @endforeach 
-                            @else
-                                <tr>
-                                    <td colspan="5">No Order found</td>
+                                            </a>   
+                                            
+                                            <div class="flex-grow-1 text-truncate">
+                                                <h5 class="product-title">{{ $value->seat->table_name }}</h5>                                                    
+                                                <p class="text-muted tiny-font">Notes: {{ $value->notes }}</p>
+                                                <p class="text-muted tiny-font">Ready Time: {{ $value->ready_time }}</p>
+                                            </div>                                                
+                                        </div>
+                                    </td>
+                                    <td class="text-end">{{ $value->items_sum_qty }}</td>
+                                    <td class="text-end"><h5>₹{{ round($value->total) }}</h5></td>
+                                    <td class="text-end">{{ \Carbon\Carbon::parse($value->created_at->format('d M, Y')) }}</td>
+                                    <td class="text-end">
+                                        @if ($value->status == 'running')
+                                            <span class="badge bg-danger">Running</span>
+                                        @elseif ($value->status == 'pending')
+                                            <svg class="text-danger h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        @elseif ($value->status == 'shipped')
+                                            <span class="badge bg-info">Shipped</span>
+                                        @elseif ($value->status == 'delivered')
+                                            <svg class="text-success-500 h-6 w-6 text-success" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        @else
+                                            <span class="badge bg-danger">Cancelled</span>
+                                        @endif
+                                    </td>                                        
                                 </tr>
-                            @endif
+                            @empty
+                                <p>No {{ $type }} orders found</p>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
-            @endif
-            
-            @if($takeawayCount > 0)
-                <div class="tab-pane" id="tabs-2" role="tabpanel">
-                    <table class="table table-hover text-nowrap">
-                        <thead>
-                            <tr>
-                                <th>Order#</th>
-                                <th>Ordered items</th>
-                                <th>Name</th>
-                                <th>Phone</th>
-                                <th>Email</th>
-                                <th>Ready time</th>
-                                <th>Notes</th>                                    
-                                <th>Amount</th>
-                                <th>Total</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if ($orderItems->isNotEmpty())
-                                @foreach ($orderItems as $value)
-                                    @if($value->orders->order_type == 'Takeaway')
-                                        <tr>
-                                            <td><a href="{{ route('orders.detail',$value->order_id) }}">{{ $value->order_id }}</a></td>
-                                            <td>{{ $value->name }} - {{ $value->qty }}</td>
-                                            <td>{{ $value->orders->ready_time }}</td>
-                                            <td>{{ $value->orders->takeaway_name }}</td>
-                                            <td>{{ $value->orders->takeaway_phone }}</td>
-                                            <td>{{ $value->orders->takeaway_email }}</td>
-                                            <td>{{ $value->orders->notes }}</td>
-                                            <td>₹ {{ number_format($value->price,2) }}</td>
-                                            <td>₹ {{ number_format($value->price*$value->qty,2) }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($value->created_at->format('d M, Y')) }}</td>
-                                        </tr>
-                                    @endif
-                                @endforeach 
-                            @else
-                                <tr>
-                                    <td colspan="5">Records not found</td>
-                                </tr>
-                            @endif
-                        </tbody>
-                    </table>
-                </div>
-            @endif
-
-            @if($deliveryCount > 0)
-                <div class="tab-pane" id="tabs-3" role="tabpanel">
-                    <table class="table table-hover text-nowrap">
-                        <thead>
-                            <tr>
-                                <th>Order#</th>
-                                <th>Ordered items</th>
-                                <th>Name</th>
-                                <th>Phone</th>
-                                <th>Email</th>
-                                <th>Ready time</th>
-                                <th>Notes</th>                                    
-                                <th>Amount</th>
-                                <th>Total</th>
-                                <th>Payment</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if ($orderItems->isNotEmpty())
-                                @foreach ($orderItems as $value)
-                                    @if($value->orders->order_type == 'Delivery')
-                                        <tr>
-                                            <td><a href="{{ route('orders.detail',$value->order_id) }}">{{ $value->order_id }}</a></td>
-                                            <td>{{ $value->name }} - {{ $value->qty }}</td>
-                                            <td>{{ $value->orders->delivery_name }}</td>
-                                            <td>{{ $value->orders->delivery_phone }}</td>
-                                            <td>{{ $value->orders->delivery_email }}</td>
-                                            <td>{{ $value->orders->ready_time }}</td>
-                                            <td>Table no. {{ $value->orders->table_number }}</td>
-                                            <td>{{ $value->orders->notes }}</td>
-                                            <td>₹ {{ number_format($value->price,2) }}</td>
-                                            <td>₹ {{ number_format($value->price*$value->qty,2) }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($value->created_at->format('d M, Y')) }}</td>
-                                        </tr>
-                                    @endif
-                                @endforeach 
-                            @else
-                                <tr>
-                                    <td colspan="5">Records not found</td>
-                                </tr>
-                            @endif
-                        </tbody>
-                    </table>
-                </div>
-            @endif
-        </div>
-    </div>
-
-    <div class="card-footer clearfix">
-        {{-- {{ $orders->links() }} --}}
+            @endforeach
+        </div>       
     </div>
 </div>
     

@@ -100,8 +100,8 @@
                     @foreach ($tableRunning as $value)
                         <div class="col-md-3">
                             <div class="invisible-checkboxes">
-                                <input {{ ($value->seat->status == $value->status) ? 'checked' : '' }} type="checkbox" id="custom_{{ $value->table_slug }}" value="{{ $value->table_name }}" />
-                                <label class="checkbox-alias" for="custom_{{ $value->seat->table_slug }}">{{ $value->seat->table_name  }} <p class="small-text">Seats: {{ $value->seating_capacity }}</p></label>
+                                {{-- <input {{ ($value->seat->status == $value->status) ? 'checked' : '' }} type="checkbox" id="custom_{{ $value->table_slug }}" value="{{ $value->table_name }}" />
+                                <label class="checkbox-alias" for="custom_{{ $value->seat->table_slug }}">{{ $value->seat->table_name  }} <p class="small-text">Seats: {{ $value->seating_capacity }}</p></label> --}}
                                 
                                 <div class="countSeat">
                                     <a href="javascript:void(0)" data-toggle="modal" data-target="#showQR_{{ $value->table_slug }}">QR</a>

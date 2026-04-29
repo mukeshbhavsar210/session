@@ -59,12 +59,12 @@ Route::controller(FrontController::class)->group(function() {
 Route::get('/dashboard', [HomeController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::group(['prefix' => 'admin'], function(){
-    Route::group(['middleware' => 'admin.guest'], function(){
-        Route::controller(AdminLoginController::class)->group(function() {
-            Route::get('/login', 'index')->name('admin.login');
-            Route::post('/authenticate', 'authenticate')->name('admin.authenticate');
-        });
-    });
+    // Route::group(['middleware' => 'admin.guest'], function(){
+    //     Route::controller(AdminLoginController::class)->group(function() {
+    //         Route::get('/login', 'index')->name('admin.login');
+    //         Route::post('/authenticate', 'authenticate')->name('admin.authenticate');
+    //     });
+    // });
 
     //Route::group(['middleware' => 'admin.auth'], function(){
     Route::middleware('auth')->group(function () {

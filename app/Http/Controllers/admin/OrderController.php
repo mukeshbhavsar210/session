@@ -11,43 +11,31 @@ use App\Models\Tax;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class OrderController extends Controller
-{
+class OrderController extends Controller {
     public function index(Request $request){
-        $orderItems = OrderItem::latest('order_items.created_at')->with('orders')->get();
+        $orders = Order::with(['items', 'seat', 'items.product.product_images'])
+            ->withSum('items', 'qty')
+            ->latest('orders.created_at')
+            ->get();
 
-        $orderCount = DB::table('orders')
-                    ->select(DB::raw('count(*) as count'))
-                    ->get()[0]->count;
-
-        $dineinCount = DB::table('orders')
-                    ->where('order_type', 'Dinein')
-                    ->select(DB::raw('count(*) as count'))
-                    ->get()[0]->count;
-
-        $takeawayCount = DB::table('orders')
-                    ->where('order_type', 'Takeaway')
-                    ->select(DB::raw('count(*) as count'))
-                    ->get()[0]->count;
-
-        $deliveryCount = DB::table('orders')
-                    ->where('order_type', 'Delivery')
-                    ->select(DB::raw('count(*) as count'))
-                    ->get()[0]->count;
+        // Order counts
+        $totalOrders = Order::count();
+        $dineinOrders = Order::where('order_type', 'Dinein')->latest()->paginate(10, ['*'], 'dinein_page');
+        $takeawayOrders = Order::where('order_type', 'Takeaway')->latest()->paginate(10, ['*'], 'takeaway_page');
+        $deliveryOrders = Order::where('order_type', 'Delivery')->latest()->paginate(10, ['*'], 'delivery_page');
 
         $data = [
-            'orderItems' => $orderItems,
-            'orderCount' => $orderCount,
-            'dineinCount' => $dineinCount,
-            'takeawayCount' => $takeawayCount,
-            'deliveryCount' => $deliveryCount
+            'orders' => $orders,
+            'totalOrders' => $totalOrders,  
+            'dineinOrders' => $dineinOrders,
+            'takeawayOrders' => $takeawayOrders,
+            'deliveryOrders' => $deliveryOrders,
         ];
 
-        //dd($dineinCount);
-
-        //$orders = $orders->paginate(10);
         return view('admin.orders.list', $data);
     }
+
+    
 
     public function detail($orderId){
         $order = Order::with('seat')->findOrFail($orderId);
