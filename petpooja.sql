@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 28, 2026 at 03:35 PM
+-- Generation Time: Apr 29, 2026 at 05:18 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -129,9 +129,9 @@ CREATE TABLE `cache_locks` (
 
 CREATE TABLE `categories` (
   `id` bigint(20) UNSIGNED NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `slug` varchar(255) NOT NULL,
-  `image` varchar(255) DEFAULT NULL,
+  `name` varchar(100) NOT NULL,
+  `slug` varchar(100) NOT NULL,
+  `image` varchar(100) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -141,11 +141,10 @@ CREATE TABLE `categories` (
 --
 
 INSERT INTO `categories` (`id`, `name`, `slug`, `image`, `created_at`, `updated_at`) VALUES
-(187, 'Lunch', 'lunch', '187_Lunch.png', '2025-01-11 05:06:23', '2025-01-11 05:06:23'),
-(188, 'Dinner', 'dinner', '188_Dinner.png', '2025-01-11 05:06:33', '2025-01-11 05:06:33'),
-(189, 'Desserts', 'desserts', '189_Desserts.png', '2025-01-11 05:06:42', '2025-01-11 05:06:43'),
-(190, 'Drinks', 'drinks', '190_Drinks.png', '2025-01-11 05:06:51', '2025-01-11 05:06:52'),
-(195, 'Dosa', 'dosa', 'dosa_1777379818.JPG', '2026-04-28 07:06:58', '2026-04-28 07:06:58');
+(187, 'Lunch', 'lunch', 'lunch.webp', '2025-01-11 05:06:23', '2025-01-11 05:06:23'),
+(188, 'Dinner', 'dinner', 'dinner.jpg', '2025-01-11 05:06:33', '2025-01-11 05:06:33'),
+(189, 'Desserts', 'desserts', 'dessert.jpg', '2025-01-11 05:06:42', '2025-01-11 05:06:43'),
+(190, 'Drinks', 'drinks', 'drinks.jpg', '2025-01-11 05:06:51', '2025-01-11 05:06:52');
 
 -- --------------------------------------------------------
 
@@ -525,6 +524,41 @@ INSERT INTO `items` (`id`, `name`, `description`, `photo`, `price`, `created_at`
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `jobs`
+--
+
+CREATE TABLE `jobs` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `queue` varchar(255) NOT NULL,
+  `payload` longtext NOT NULL,
+  `attempts` tinyint(3) UNSIGNED NOT NULL,
+  `reserved_at` int(10) UNSIGNED DEFAULT NULL,
+  `available_at` int(10) UNSIGNED NOT NULL,
+  `created_at` int(10) UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `job_batches`
+--
+
+CREATE TABLE `job_batches` (
+  `id` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `total_jobs` int(11) NOT NULL,
+  `pending_jobs` int(11) NOT NULL,
+  `failed_jobs` int(11) NOT NULL,
+  `failed_job_ids` longtext NOT NULL,
+  `options` mediumtext DEFAULT NULL,
+  `cancelled_at` int(11) DEFAULT NULL,
+  `created_at` int(11) NOT NULL,
+  `finished_at` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `menus`
 --
 
@@ -543,8 +577,9 @@ CREATE TABLE `menus` (
 --
 
 INSERT INTO `menus` (`id`, `name`, `slug`, `image`, `category_id`, `created_at`, `updated_at`) VALUES
-(15, 'Roti', 'roti', '15_Roti.png', 187, '2025-01-11 05:08:21', '2025-01-11 05:08:21'),
-(16, 'Biryani', 'biryani', '16_Biryani.png', 187, '2025-01-11 05:08:34', '2025-01-11 05:08:34');
+(21, 'Butter Roti', 'butter', NULL, 187, '2026-04-29 00:08:51', '2026-04-29 00:08:51'),
+(22, 'Veg Biriyani', 'veg-biriyani', NULL, 187, '2026-04-29 00:14:03', '2026-04-29 00:14:03'),
+(23, 'Mutton Biriyani', 'mutton-biri', NULL, 187, '2026-04-29 09:06:44', '2026-04-29 09:06:44');
 
 -- --------------------------------------------------------
 
@@ -630,7 +665,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (51, '2025_01_26_130415_create_user_roles_table', 43),
 (52, '2025_01_28_115518_create_orders_table', 44),
 (53, '2025_01_29_123429_create_taxes_table', 45),
-(54, '2025_02_01_071017_create_permission_tables', 46);
+(54, '2025_02_01_071017_create_permission_tables', 46),
+(55, '2026_04_29_064706_add_product_id_to_orders_table', 47),
+(56, '2026_04_29_122843_add_product_id_to_order_items_table', 48);
 
 -- --------------------------------------------------------
 
@@ -679,9 +716,9 @@ CREATE TABLE `orders` (
   `notes` text DEFAULT NULL,
   `shipping` double(10,2) DEFAULT NULL,
   `shipped_date` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
-  `gst` int(100) NOT NULL DEFAULT 18,
-  `sgst` int(100) NOT NULL DEFAULT 9,
-  `cgst` int(20) NOT NULL DEFAULT 9,
+  `gst` int(5) NOT NULL DEFAULT 18,
+  `sgst` int(5) NOT NULL DEFAULT 9,
+  `cgst` int(5) NOT NULL DEFAULT 9,
   `total` double(10,2) DEFAULT NULL,
   `payment` enum('paid','not paid') NOT NULL DEFAULT 'not paid',
   `status` enum('running','pending','shipped','delivered') NOT NULL DEFAULT 'running',
@@ -694,8 +731,8 @@ CREATE TABLE `orders` (
 --
 
 INSERT INTO `orders` (`id`, `session_id`, `seat_id`, `area_id`, `order_type`, `delivery_name`, `delivery_phone`, `delivery_email`, `takeaway_name`, `takeaway_phone`, `takeaway_email`, `ready_time`, `address`, `notes`, `shipping`, `shipped_date`, `gst`, `sgst`, `cgst`, `total`, `payment`, `status`, `created_at`, `updated_at`) VALUES
-(3, '9756254457', 45, NULL, 'Dinein', NULL, NULL, NULL, NULL, NULL, NULL, '1', NULL, 'asdadsda', 80.00, '2025-01-29 13:20:32', 18, 9, 9, 790.00, 'not paid', 'shipped', '2025-01-29 06:54:34', '2025-01-29 07:50:32'),
-(4, '5870027405', 45, NULL, 'Dinein', NULL, NULL, NULL, NULL, NULL, NULL, '1', NULL, 'I want spicy biriyani', NULL, '2025-01-30 11:04:15', 18, 9, 9, 790.00, 'not paid', 'shipped', '2025-01-29 08:45:55', '2025-01-30 05:34:15'),
+(3, '9756254457', 44, NULL, 'Dinein', NULL, NULL, NULL, NULL, NULL, NULL, '1', NULL, 'asdadsda', 80.00, '2026-04-29 11:36:25', 18, 9, 9, 790.00, 'not paid', 'shipped', '2025-01-29 06:54:34', '2025-01-29 07:50:32'),
+(4, '5870027405', 43, NULL, 'Dinein', NULL, NULL, NULL, NULL, NULL, NULL, '1', NULL, 'I want spicy biriyani', NULL, '2026-04-29 12:26:44', 12, 5, 5, 790.00, 'not paid', 'shipped', '2025-01-29 08:45:55', '2025-01-30 05:34:15'),
 (5, '5602957805', 45, NULL, 'Dinein', NULL, NULL, NULL, NULL, NULL, NULL, 'Ready time', NULL, NULL, NULL, NULL, 18, 9, 9, 700.00, 'not paid', 'running', '2026-04-28 06:49:53', '2026-04-28 06:49:53'),
 (6, '3263925571', 45, NULL, 'Dinein', NULL, NULL, NULL, NULL, NULL, NULL, 'Ready time', NULL, NULL, NULL, NULL, 18, 9, 9, 700.00, 'not paid', 'running', '2026-04-28 06:49:55', '2026-04-28 06:49:55');
 
@@ -708,8 +745,8 @@ INSERT INTO `orders` (`id`, `session_id`, `seat_id`, `area_id`, `order_type`, `d
 CREATE TABLE `order_items` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `order_id` bigint(20) UNSIGNED NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `image` varchar(100) DEFAULT NULL,
+  `product_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `name` varchar(100) NOT NULL,
   `qty` int(11) NOT NULL,
   `price` double(10,2) NOT NULL,
   `total` double(10,2) DEFAULT NULL,
@@ -721,11 +758,11 @@ CREATE TABLE `order_items` (
 -- Dumping data for table `order_items`
 --
 
-INSERT INTO `order_items` (`id`, `order_id`, `name`, `image`, `qty`, `price`, `total`, `created_at`, `updated_at`) VALUES
-(54, 3, 'Keerthi Estate', NULL, 1, 700.00, 700.00, '2025-01-29 06:54:34', '2025-01-29 06:54:34'),
-(55, 3, 'Roti', NULL, 1, 90.00, 90.00, '2025-01-29 06:54:34', '2025-01-29 06:54:34'),
-(56, 4, 'Keerthi Estate', NULL, 1, 700.00, 700.00, '2025-01-29 08:45:55', '2025-01-29 08:45:55'),
-(57, 4, 'Roti', NULL, 1, 90.00, 90.00, '2025-01-29 08:45:55', '2025-01-29 08:45:55');
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `name`, `qty`, `price`, `total`, `created_at`, `updated_at`) VALUES
+(54, 3, 1, 'Veg Biriyani', 1, 700.00, 700.00, '2025-01-29 06:54:34', '2025-01-29 06:54:34'),
+(55, 3, 7, 'Roti', 1, 90.00, 90.00, '2025-01-29 06:54:34', '2025-01-29 06:54:34'),
+(56, 4, 1, 'Biriyani', 1, 700.00, 700.00, '2025-01-29 08:45:55', '2025-01-29 08:45:55'),
+(57, 4, 7, 'Roti', 2, 90.00, 90.00, '2025-01-29 08:45:55', '2025-01-29 08:45:55');
 
 -- --------------------------------------------------------
 
@@ -870,9 +907,8 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `name`, `slug`, `category_id`, `menu_id`, `product_id`, `description`, `price`, `compare_price`, `veg_nonveg`, `status`, `created_at`, `updated_at`, `seat_id`) VALUES
-(1, 'Biriyani', 'biriyani', 188, 16, 1, NULL, 100.00, 99.00, 'Non-veg', 1, '2025-01-22 03:43:14', '2025-01-22 03:43:14', 0),
-(3, 'Roti', 'roti', 188, 15, 3, 'roti', 90.00, 55.00, 'Veg', 1, '2025-01-22 03:51:36', '2025-01-22 03:51:36', 0),
-(5, 'Sona Bhavsar', 'sona-bhavsar', 188, 16, 3, NULL, 700.00, NULL, 'Non-veg', 1, '2025-01-22 05:04:02', '2025-01-22 05:04:02', 0);
+(1, 'Veg Biriyani', 'veg_biriyani', 187, 22, NULL, 'Best Biriyani', 499.00, 599.00, 'Veg', 1, NULL, NULL, 1),
+(7, 'Butter Roti', 'butter_roti', 187, 21, NULL, 'Best Biriyani', 499.00, 599.00, 'Veg', 1, NULL, NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -893,8 +929,8 @@ CREATE TABLE `product_images` (
 --
 
 INSERT INTO `product_images` (`id`, `product_id`, `image`, `created_at`, `updated_at`) VALUES
-(1, 3, '3-1-1737537697.jpg', '2025-01-22 03:51:36', '2025-01-22 03:51:37'),
-(3, 5, '5-3-1737542043.jpg', '2025-01-22 05:04:03', '2025-01-22 05:04:03');
+(1, 1, 'chicken-biriyani_1739538802.jpg', NULL, NULL),
+(5, 7, '3-1-1737537697.jpg', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1380,6 +1416,19 @@ ALTER TABLE `items`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `jobs`
+--
+ALTER TABLE `jobs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `jobs_queue_index` (`queue`);
+
+--
+-- Indexes for table `job_batches`
+--
+ALTER TABLE `job_batches`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `menus`
 --
 ALTER TABLE `menus`
@@ -1425,7 +1474,8 @@ ALTER TABLE `orders`
 --
 ALTER TABLE `order_items`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `order_items_order_id_foreign` (`order_id`);
+  ADD KEY `order_items_order_id_foreign` (`order_id`),
+  ADD KEY `order_items_product_id_foreign` (`product_id`);
 
 --
 -- Indexes for table `pages`
@@ -1629,10 +1679,16 @@ ALTER TABLE `items`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
+-- AUTO_INCREMENT for table `jobs`
+--
+ALTER TABLE `jobs`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `menus`
 --
 ALTER TABLE `menus`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `menu_categories`
@@ -1644,7 +1700,7 @@ ALTER TABLE `menu_categories`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
 
 --
 -- AUTO_INCREMENT for table `orders`
@@ -1686,13 +1742,13 @@ ALTER TABLE `personal_access_tokens`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `product_images`
 --
 ALTER TABLE `product_images`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `product_ratings`
@@ -1800,7 +1856,8 @@ ALTER TABLE `orders`
 -- Constraints for table `order_items`
 --
 ALTER TABLE `order_items`
-  ADD CONSTRAINT `order_items_order_id_foreign` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `order_items_order_id_foreign` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `order_items_product_id_foreign` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Constraints for table `products`
