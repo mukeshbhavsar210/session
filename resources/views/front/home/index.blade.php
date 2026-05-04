@@ -3,7 +3,6 @@
 @section('content')
 
 
-
 <section class="menu-products-section menu-products-section--grid">
     <div class="menu-grid">
         @if(!empty($products))
@@ -147,206 +146,189 @@
             @endif
         </div>
     </section>
+           
+    <div id="bottomSheet" class="bottom-sheet">
+        <div class="sheet-content">
+            <div class="handle">
+                @php
+                    $total = 0;
+                    if(session()->has('cart')) {
+                        foreach(session('cart') as $item) {
+                            $total += $item['price'] * $item['quantity'];
+                        }
+                    }
+                @endphp
 
-    @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    <?php $total = 0 ?>
-    <div class="mainCartWrapper">
-        <div class="orderDetails">
-            <div id="bottomSheet" class="bottom-sheet">
-                <div class="sheet-content">
-                    <div class="handle">
-                        @if(session()->has('cart') && count(session('cart')) > 0)
-                            Order {{ $qty }} for ₹{{ $total }}
-                            <a href="{{ url('clear-cart') }}" class="delete-icon">
-                                <span class="sprites"></span>
-                            </a>
-                        @else
-                            Order
-                        @endif
-                    </div>
-                    <div class="p-3">
-                        <div class="orderBottom">
-                            @if(session()->has('cart') && count(session('cart')) > 0)
-                                <ul class="nav nav-tabs nav-justified" id="myTab" role="tablist">
-                                    <li class="nav-item" role="presentation">
-                                        <button data-type="dinein" class="nav-link active" id="tab_01-tab" data-bs-toggle="tab" data-bs-target="#tab_01" type="button">
-                                            Dinein
-                                        </button>
-                                    </li>
-                                    <li class="nav-item" role="presentation">
-                                        <button data-type="takeaway" class="nav-link" id="tab_02-tab" data-bs-toggle="tab" data-bs-target="#tab_02" type="button">
-                                            Takeaway
-                                        </button>
-                                    </li>
-                                    <li class="nav-item" role="presentation">
-                                        <button data-type="delivery" class="nav-link" id="tab_03-tab" data-bs-toggle="tab" data-bs-target="#tab_03" type="button">
-                                            Delivery
-                                        </button>
-                                    </li>
-                                </ul>            
-
-                                <form id="makeOrder" name="makeOrder" method="POST">
-                                    @csrf
-                                    <div class="basket-page__content__products">
-                                        @foreach(session('cart') as $id => $value)                                                            
-                                            <div class="row">
-                                                <div class="col-7">
-                                                    <p class="mt-1">{{ $value['quantity'] }} x {{ $value['name'] }}</p>
-                                                </div>
-                                                <div class="col-3">
-                                                    <div class="flex">
-                                                        @if($value['quantity'] > 0)
-                                                            <div class="qty-box flex align-items-center">
-                                                                <a href="javascript:0" class="sub-icon sub-qty" data-id="{{ $id }}">
-                                                                    <span class="sprites"></span>                                                        
-                                                                </a>
-                                                                <a href="javascript:0" class="add-icon add-qty" data-id="{{ $id }}">
-                                                                    <span class="sprites"></span>
-                                                                </a>
-                                                            </div>
-                                                        @else
-                                                            <a href="javascript:0" class="add-to-cart add-icon add-qty" data-id="{{ $id }}">
-                                                                <span class="sprites"></span>
-                                                            </a>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                                <div class="col-2">
-                                                    <div class="right">
-                                                        <p class="my-2">₹ {{ $value['price'] }}</p>                                                
-                                                    </div>
-                                                </div>
-                                                
-                                                <?php $total += $value['price'] * $value['quantity'] ?>
-                                            </div>
-                                        @endforeach
-                                    </div>                   
-                            
-                                    <div class="basket-page__content__total">
-                                        <div>Total:</div>
-                                        <div style="flex-grow: 1;"></div>
-                                        ₹{{ $total }}
-                                    </div>
-
-                                    <input type="hidden" name="order_type" id="order_type" value="dinein" class="form-control">
-                                    <input type="hidden" name="total_amount" value="{{ $total }}" class="form-control">
-
-                                    <div class="basket-page__content__notes mb-2">
-                                        <textarea name="notes" placeholder="Add note 🙏🏻..." ></textarea>
-                                    </div>
-
-                                    <div class="basket-page__content__delivery-content mb-2">
-                                        <select class="form-select mb-2" aria-label="Default select example" name="dinein_time">
-                                            <option selected>When Ready</option>
-                                            <option value="10">10:00</option>
-                                            <option value="11">11:00</option>
-                                            <option value="12">12:00</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="tab-content" id="myTabContent">
-                                        <div class="tab-pane fade show active" id="tab_01" role="tabpanel">
-                                            <div class="basket-page__content__delivery-content mb-3">
-                                                <select name="seat_id" id="seat_id" class="form-select mb-3">
-                                                    <option value="">Table</option>
-                                                    @foreach ($seats as $value)
-                                                        {{-- @if(empty($value->area_id))
-                                                            <option value="{{ $value->id }}">
-                                                                {{ $value->table_name }}
-                                                            </option>
-                                                        @endif --}}
-                                                        @if($value->area_id == NULL)
-                                                            <option value="{{ $value->id }}">{{ $value->table_name }}</option>
-                                                        @elseif($value->area_id == '')
-                                                            <option value="{{ $value->id }}">{{ $value->table_name }}</option>
-                                                        @endif
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="tab-pane fade" id="tab_02" role="tabpanel">
-                                            <div class="form-group mb-2">
-                                                <input type="text" class="form-control" placeholder="Name" name="customer_name">
-                                            </div>
-
-                                            <div class="row">
-                                                <div class="col-7">
-                                                    <div class="form-group mb-3">
-                                                        <input type="email" class="form-control" placeholder="Email" name="customer_email">
-                                                    </div>
-                                                </div>
-                                                <div class="col-5">
-                                                    <div class="form-group mb-2">
-                                                        <input type="phone" class="form-control" placeholder="Phone" name="customer_phone">
-                                                    </div>
-                                                </div>
-                                            </div>  
-                                        </div>
-
-                                        <div class="tab-pane fade" id="tab_03" role="tabpanel">
-                                            <div class="basket-page__content__delivery-content mb-2" >
-                                                <textarea class="form-control" id="address" name="address" placeholder="Enter address">address</textarea>
-                                            </div>
-
-                                            <div class="form-group mb-2">
-                                                <input type="text" id="customer_name" class="form-control" placeholder="Customer Name" name="customer_name">
-                                            </div>
-
-                                            <div class="row">
-                                                <div class="col-7">
-                                                    <div class="form-group mb-2">
-                                                        <input type="email" id="customer_email" class="form-control" placeholder="Email" name="customer_email">
-                                                    </div>
-                                                </div>
-                                                <div class="col-5">
-                                                    <div class="form-group mb-2">
-                                                        <input type="phone" id="customer_phone" class="form-control" placeholder="Phone" name="customer_phone">
-                                                    </div>
-                                                </div>
-                                            </div>        
-                                        </div>
-
-                                        <div style="text-align: center; margin-top: 10px;">
-                                            <div style="color: var(--ik-error-color); margin: 10px 0px; font-size: 0.9rem;">Fill all required fields</div>
-                                        </div>
-
-                                        <div class="basket-page__content__terms">By clicking Order, you confirm your age is 18+ and you agree to the <a href="https://instalacarte.com/page/privacy-policy" target="_blank">terms</a></div>
-
-                                        <div class="basket-order-button-container">
-                                            <button class="btn btn--brand basket-page__content__order-btn basket-page__content__order-btn--disabled">Order</button>
-                                        </div>                
-                                    </div>
-                                </form>                
-                            @else                    
-                                <div class="emptyBag">
-                                    <img src="{{ asset('front-assets/images/empty_bag.png') }}" alt="empty bag" />
-                                    <p>Nothing to order</p>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-                <div class="sheet-overlay"></div>
-            </div>
-            
-            {{-- <div class="flex-justify" id="cartDetails" data-bs-toggle="modal" data-bs-target="#orderModal">                
                 @if(session()->has('cart') && count(session('cart')) > 0)
-                    Order {{ $qty }} for ₹{{ $total }}
-                    <a href="{{ url('clear-cart') }}" class="delete-icon">
+                    Order {{ count(session('cart')) }} for ₹{{ $total }}
+                    {{-- <a href="{{ url('clear-cart') }}" class="delete-icon">
                         <span class="sprites"></span>
-                    </a>
+                    </a> --}}
+
+                    <div class="tab-content tab1 active">
+                        <span class="sprites tab1_icon"></span>
+                    </div>
+                    <div class="tab-content tab2">
+                        <span class="sprites tab2_icon"></span>
+                    </div>
+                    <div class="tab-content tab3">
+                        <span class="sprites tab3_icon"></span>
+                    </div>
                 @else
                     Order
+                @endif                                             
+            </div>
+            <div class="p-4">                        
+                @if(session()->has('cart') && count(session('cart')) > 0)
+                    <ul class="custom-tabs">
+                        <li class="tab-link active" data-tab="tab1">Dine in</li>
+                        <li class="tab-link" data-tab="tab2">Takeaway</li>
+                        <li class="tab-link" data-tab="tab3">Delivery</li>
+                    </ul>
+                            
+                    <form id="makeOrder" name="makeOrder" method="POST">
+                        @csrf
+                        <div class="basket-page__content__products">
+                            @foreach(session('cart') as $id => $value)                                                            
+                                <div class="row mb-1">
+                                    <div class="col-7">
+                                        <p class="mt-1">{{ $value['quantity'] }} x {{ $value['name'] }}</p>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="flex">
+                                            @if($value['quantity'] > 0)
+                                                <div class="qty-box flex align-items-center">
+                                                    <a href="javascript:0" class="sub-icon sub-qty" data-id="{{ $id }}">
+                                                        <span class="sprites"></span>                                                        
+                                                    </a>
+                                                    <a href="javascript:0" class="add-icon add-qty" data-id="{{ $id }}">
+                                                        <span class="sprites"></span>
+                                                    </a>
+                                                </div>
+                                            @else
+                                                <a href="javascript:0" class="add-to-cart add-icon add-qty" data-id="{{ $id }}">
+                                                    <span class="sprites"></span>
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="right">
+                                            <p class="my-2">₹ {{ $value['price'] }}</p>                                                
+                                        </div>
+                                    </div>
+                                    
+                                    <?php $total += $value['price'] * $value['quantity'] ?>
+                                </div>
+                            @endforeach
+                        </div>                   
+                
+                        <div class="basket-page__content__total">
+                            <p>Total:</p>
+                            <p>₹{{ $total }}</p>                                
+                        </div>
+
+                        <div class="basket-page__content__delivery">
+                            <div class="tab-content tab3">
+                                <p>+ Delivery fee ₹50</p>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="order_type" id="order_type" value="dinein" class="form-control">
+                        <input type="hidden" name="total_amount" value="{{ $total }}" class="form-control">
+
+                        <div class="basket-page__content__notes mb-2">
+                            <textarea name="notes" placeholder="Add note 🙏🏻..." ></textarea>
+                        </div>
+
+                        <div class="basket-page__content__delivery-content mb-2">
+                            <select class="form-select mb-2" aria-label="Default select example" name="dinein_time">
+                                <option selected>When Ready</option>
+                                <option value="10">10:00</option>
+                                <option value="11">11:00</option>
+                                <option value="12">12:00</option>
+                            </select>
+                        </div>
+
+                        <div class="tab-content tab1 active">
+                            <div class="basket-page__content__delivery-content mb-3">
+                                <select name="seat_id" id="seat_id" class="form-select mb-3">
+                                    <option value="">Table</option>
+                                    @foreach ($seats as $value)
+                                        {{-- @if(empty($value->area_id))
+                                            <option value="{{ $value->id }}">
+                                                {{ $value->table_name }}
+                                            </option>
+                                        @endif --}}
+                                        @if($value->area_id == NULL)
+                                            <option value="{{ $value->id }}">{{ $value->table_name }}</option>
+                                        @elseif($value->area_id == '')
+                                            <option value="{{ $value->id }}">{{ $value->table_name }}</option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="tab-content tab2">
+                            <div class="form-group mb-2">
+                                <input type="text" class="form-control" placeholder="Name" name="customer_name">
+                            </div>
+                            <div class="row">
+                                <div class="col-7">
+                                    <div class="form-group mb-3">
+                                        <input type="email" class="form-control" placeholder="Email" name="customer_email">
+                                    </div>
+                                </div>
+                                <div class="col-5">
+                                    <div class="form-group mb-2">
+                                        <input type="phone" class="form-control" placeholder="Phone" name="customer_phone">
+                                    </div>
+                                </div>
+                            </div> 
+                        </div>
+                        <div class="tab-content tab3">                                
+                                <div class="basket-page__content__delivery-content mb-2" >
+                                    <textarea class="form-control" id="address" name="address" placeholder="Enter address">address</textarea>
+                                </div>
+
+                                <div class="form-group mb-2">
+                                    <input type="text" id="customer_name" class="form-control" placeholder="Customer Name" name="customer_name">
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-7">
+                                        <div class="form-group mb-2">
+                                            <input type="email" id="customer_email" class="form-control" placeholder="Email" name="customer_email">
+                                        </div>
+                                    </div>
+                                    <div class="col-5">
+                                        <div class="form-group mb-2">
+                                            <input type="phone" id="customer_phone" class="form-control" placeholder="Phone" name="customer_phone">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="text-align: center; margin-top: 10px;">
+                                <div style="color: var(--ik-error-color); margin: 10px 0px; font-size: 0.9rem;">Fill all required fields</div>
+                            </div>
+
+                            <div class="basket-page__content__terms">By clicking Order, you confirm your age is 18+ and you agree to the <a href="https://instalacarte.com/page/privacy-policy" target="_blank">terms</a></div>
+
+                            <div class="basket-order-button-container">
+                                <button class="btn btn--brand basket-page__content__order-btn basket-page__content__order-btn--disabled">Order</button>
+                            </div> 
+                        </div>
+                    </form>                
+                @else                    
+                    <div class="emptyBag">
+                        <img src="{{ asset('front-assets/images/empty_bag.png') }}" alt="empty bag" />
+                        <p>Nothing to order</p>
+                    </div>
                 @endif
-            </div> --}}
-    </div>
-</div>
+            </div>
+        </div>
+        <div class="sheet-overlay"></div>
+    </div>                 
 @endsection
 
 @section('customJs')
@@ -438,13 +420,25 @@
         });
     });
 
-    $(document).ready(function () {        
+    $(document).ready(function () {
         $('.handle').on('click', function () {
-            $('#bottomSheet').toggleClass('active');
+            $('#bottomSheet').toggleClass('active_bottom');
         });  
         $('.sheet-overlay').on('click', function () {
-            $('#bottomSheet').removeClass('active');
-        });      
+            $('#bottomSheet').removeClass('active_bottom');
+        }); 
+
+        $('.tab-link').click(function () {
+            var tabID = $(this).data('tab');
+
+            // remove active from all tabs
+            $('.tab-link').removeClass('active');
+            $('.tab-content').removeClass('active');
+
+            // add active to clicked tab
+            $(this).addClass('active');
+            $('.' + tabID).addClass('active');
+        });
     });
 </script>
 @endsection

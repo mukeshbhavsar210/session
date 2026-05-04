@@ -12,13 +12,23 @@ use App\Models\View;
 use App\Models\Theme;
 use Illuminate\Support\Facades\Mail;
 
-function getCategories(){
-    return Category::orderBy('name','ASC')->with('sub_category')->take(4)->orderBy('id','DESC')->get();
-}
-    
+function getCategories() {
+    return Category::orderByRaw("
+            CASE 
+                WHEN name = 'Popular' THEN 0
+                ELSE 1
+            END
+        ")
+        ->orderBy('name', 'ASC')
+        ->with('sub_category')
+        ->take(4)
+        ->get();
+    }    
+
 function getProducts(){
     return Menu::orderBy('name','ASC')->orderBy('id','DESC')->get();
 } 
+
 
 function getTheme(){
     return Theme::get();

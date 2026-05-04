@@ -20,53 +20,52 @@
 			<div class="header__restaurant-name">
 				<a href="{{ route('front.home') }}" class="logo" >
 					<img style="width: 120px" src="{{ asset('front-assets/images/logo.jpg') }} " alt=""></a>
-				<div class="float-end">
-					@if (Route::has('login'))
-						@auth
-							<a href="{{ url('/dashboard') }}" target="_blank" >Dashboard</a>
-						@else
-							<a href="{{ route('login') }}" target="_blank" >Log in</a>
-							@if (Route::has('register'))
-								<a href="{{ route('register') }}" target="_blank" >Register</a>
-							@endif
-						@endauth
-					@endif
-				</div>
+					<div class="float-end">
+						@if (Route::has('login'))
+							@auth
+								<a href="{{ url('/dashboard') }}" target="_blank" >Dashboard</a>
+							@else
+								<a href="{{ route('login') }}" target="_blank" >Log in</a>
+								@if (Route::has('register'))
+									<a href="{{ route('register') }}" target="_blank" >Register</a>
+								@endif
+							@endauth
+						@endif
+					</div>
 			</div>
 		</div>	
 	</header>
 
 	<section class="categories-section categories-section--medium-photo">
-	<div class="categories-section__container">							
-		@if(session('wishlist'))
-			<div class="menu-category">	
-				<div class="menu-category__img">
-					<a href="{{ route('front.wishlist') }}">									
-						<img src="{{ asset('front-assets/images/favourite.png') }}" alt="Favourites">									
-						<div class="menu-category__name no-wrap"><div>
-							Favourites 
-						</div>
-					</a>
+		<div class="categories-section__container">										
+			@if(session('wishlist'))				
+				<div class="menu-category">
+					<ul class="menu-category__img">
+						<li>
+							<a href="{{ route('front.wishlist') }}">
+								<img src="{{ asset('front-assets/images/favourite.png') }}" alt="Favourites">							
+							</a>
+							<p>Favourites</p>
+						</li>
+					</ul>					
 				</div>
-			</div>						
-		@endif
+			@endif
+
 			@if (getCategories()->isNotEmpty())
 				@foreach (getCategories() as $value )	
 					<div class="menu-category">	
-						<div class="menu-category__img">
-							<a href="{{ route('front.menu',[$value->slug])}}" >
-								@if ($value->image != "")
-									<img src="{{ asset('uploads/category/'.$value->image) }} " alt="">
-								@else
-									<img src="{{ asset('admin-assets/img/default-150x150.png') }}" alt="" />
-								@endif
-							</a>	
-						</div>
-						<div class="menu-category__name no-wrap">
-							<div><a href="{{ route('front.menu',[$value->slug])}}" >{{ $value->name }}</a></div>
-						</div>
+						<ul class="menu-category__img">
+							<li >
+								<a href="{{ route('front.menu',[$value->slug])}}" class="{{ request()->is('menu/'.$value->slug) ? 'menu_active' : '' }}" >
+									@if ($value->image != "")
+										<img src="{{ asset('uploads/category/'.$value->image) }} " alt="">								
+									@endif									
+								</a>
+								<p>{{ $value->name }}</p>
+							</li>	
+						</ul>
 					</div>
-				@endforeach
+				@endforeach				
 			@endif
 		</div>
 	</section>
@@ -116,6 +115,15 @@
 				}
 			});
 		});   
+
+    let selected = window.menuSelected;
+
+	$('a[data-slug]').each(function () {
+		if ($(this).data('slug') === selected) {
+			$(this).addClass('active');
+		}
+	});
+
 </script>
 
 @yield('customJs')
