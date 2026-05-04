@@ -1,43 +1,33 @@
 @extends('front.layouts.app')
 
 @section('content')
-    <div class="product-card">
-        <div class="row">
-            {{-- <section class="subcategories-section">
-                <div class="subcategories-section__item no-wrap no-user-select subcategories-section__item--active">All</div>
-                @if (getProducts()->isNotEmpty())
-                    @foreach (getProducts() as $value )	
-                        <div class="subcategories-section__item text-overflow" style="opacity: 1; transform: translateX(0px);">
-                            <a href="{{ route('front.menu',[$value->slug])}}" class="no-user-select">{{ $value->name }}</a>
-                        </div>
-                    @endforeach
-                @endif
-            </section> --}}
-
+    <section class="menu-products-section menu-products-section--grid">
+        <div class="menu-grid">
             @if ($products->isNotEmpty())
                 @foreach ($products as $value)
-                    <div class="col-6 mb-3">
-                        <div class="card ">
-                            <div class="product-image position-relative">
-                                @php
-                                    $productImage = $value->product_images->first();
-                                @endphp
+                    <div class="menu-product">
+                        <div class="menu-product__item">                            
+                            @php
+                                $productImage = $value->product_images->first();
+                            @endphp
 
-                                <a href="" data-bs-toggle="modal" data-bs-target="#details_{{ $value->id }}" class="product-img">
+                            <a href="" data-bs-toggle="modal" data-bs-target="#bottomModal_{{ $value->id }}" class="product-img">
+                                <div class="menu-product__item__img">
                                     @if (!empty($productImage->image))
-                                        <img src="{{ asset('uploads/product/large/'.$productImage->image) }}" alt="{{ $value->name }}" class="rounded img-fluid" >
-                                    @else
-                                        <img src="{{ asset('admin-assets/img/default-150x150.png') }}" alt="{{ $value->name }}" height="90" class="rounded" />
+                                        <img src="{{ asset('uploads/product/large/'.$productImage->image) }}" alt="{{ $value->name }}" >
                                     @endif  
-                                </a>
-                            </div>
-                            <div class="p-3">
-                                <h6>{{ $value->name }}</h6>
-                                <p class="mb-0">₹{{ $value->price }}</p>
+                                </div>
+                            </a>
+                            
+                            <div class="menu-product__item__top-block">
+                                <div class="menu-product__item__name text-overflow">
+                                    <p>{{ $value->name }}</p>
+                                    <p class="mb-0">₹{{ $value->price }}</p>
+                                </div>
                             </div>             
                             
-                            <div class="modal fade" id="details_{{ $value->id }}" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
-                                <div class="modal-dialog modal-fullscreen-sm-down">
+                            <div class="modal fade" id="bottomModal_{{ $value->id }}" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-fullscreen">
                                     <div class="modal-content">
                                         <div class="menuContainer">
                                             <div class="product-pic">

@@ -8,54 +8,74 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 
 class ShopController extends Controller {
-    public function index(Request $request, $menuSlug = null) {       
-        //$menuSelected = ' ';
+    public function index(Request $request, $menuSlug = null) {
+    // Categories with menus
+     $categories = getCategories();
 
-        $categories = Category::orderBy("name","ASC")->with('menus')->get();        
-        $products = Product::where('status',1);
+    // ✅ Default to 'popular' if no slug
+    if (empty($menuSlug)) {
+        $menuSlug = Category::whereRaw("LOWER(name) = 'popular'")
+            ->value('slug');
+    }   
 
-        if(!empty($menuSlug)) {
-            $menus = Menu::where('slug',$menuSlug)->first();
-            //$products = $products->where('menu_id',$menus->id);
-            //$menuSelected = $menus->id;
-        }
+    // Base query
+    $products = Product::where('status', 1);
 
-        // Price slider
-        if($request->get('price_max') != '' && $request->get('price_min') != '') {
-            if($request->get('price_max') == 1000){
-                $products = $products->whereBetween('price',[intval($request->get('price_min')),1000000]);
-            } else {
-                $products = $products->whereBetween('price',[intval($request->get('price_min')),intval($request->get('price_max'))]);
-            }
-        }
-
-        //Search main header
-        if (!empty($request->get('search'))){
-            $products = $products->where('title','like','%'.$request->get('search').'%');
-        }
-
-        if($request->get('sort') != ''){
-            if($request->get('sort') == 'latest'){
-                $products = $products->orderBy('id','DESC');
-            } else if($request->get('sort') == 'price_asc') {
-                $products = $products->orderBy('price','ASC');
-            } else {
-                $products = $products->orderBy('price','DESC');
-            }
-        } else {
-            $products = $products->orderBy('id','DESC');
-        }
-
-        $products = $products->paginate(10);
-
-        $data['categories'] = $categories;
-        $data['products'] = $products;        
-        //$data['menuSelected'] = $menuSelected;
-        $data['priceMax'] = (intval($request->get('price_max')) == 0 ? 1000 : $request->get('price_max'));
-        $data['priceMin'] = intval($request->get('price_min'));
-        
-        return view('front.shop.index',$data);
+    // ✅ Filter by menu slug (ONLY if exists)
+    if (!empty($menuSlug)) {
+        $products->whereHas('category', function ($q) use ($menuSlug) {
+            $q->where('slug', $menuSlug);
+        });
     }
+
+    // ✅ Price filter
+    if ($request->filled('price_min') && $request->filled('price_max')) {
+        $min = (int) $request->price_min;
+        $max = (int) $request->price_max;
+
+        if ($max == 1000) {
+            $max = 1000000; // max cap
+        }
+
+        $products->whereBetween('price', [$min, $max]);
+    }
+
+    // ✅ Search
+    if ($request->filled('search')) {
+        $products->where('title', 'like', '%' . $request->search . '%');
+    }
+
+    // ✅ Sorting
+    switch ($request->get('sort')) {
+        case 'latest':
+            $products->orderBy('id', 'DESC');
+            break;
+
+        case 'price_asc':
+            $products->orderBy('price', 'ASC');
+            break;
+
+        case 'price_desc':
+            $products->orderBy('price', 'DESC');
+            break;
+
+        default:
+            $products->orderBy('id', 'DESC');
+            break;
+    }
+
+    // Pagination
+     $products = $products->orderBy('id', 'DESC')->paginate(10);
+
+    // Pass data
+    return view('front.shop.index', [
+        'categories'   => $categories,
+        'products'     => $products,
+        'menuSelected' => $menuSlug, // for active tab
+        'priceMax'     => $request->price_max ?? 1000,
+        'priceMin'     => $request->price_min ?? 0,
+    ]);
+}
 
     public function category(Request $request, $categorySlug = null) {       
         $categorySelected = ' ';
