@@ -61,12 +61,12 @@ class CategoryController extends Controller
             $path = public_path().'/uploads/category/'.$fileName;
             $manager = new ImageManager(new Driver());
             $image = $manager->read($file);
-            $image->toJpeg(80)->save($path);
+            $image->toJpeg(100)->save($path);
             $image->cover(300,300)->save($path);
             $data->image = $fileName;
             $data->save();
 
-            return redirect()->route('categories.index')->with('success','Menu added successfully.');
+            return redirect()->route('categories.index')->with('success','Category added successfully.');
         } else {
             return redirect()->route('categories.index')->withInput()->withErrors($validator);
         }            
@@ -210,5 +210,13 @@ class CategoryController extends Controller
             'status' => true,
             'message' => 'Category deleted successfully'
         ]);
+    }
+
+    public function delete_category($id){
+        $category = Category::find($id);
+        File::delete(public_path().'/uploads/category/'.$category->image);
+        $category->delete();
+
+        return redirect()->route('categories.index')->with('success','Category deleted successfully.');
     }
 }

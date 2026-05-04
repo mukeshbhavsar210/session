@@ -63,9 +63,11 @@
                             <tr>
                                 <th class="border-top-0">Order#</th>                            
                                 <th class="border-top-0" width="250">Notes</th>
-                                <th class="border-top-0 text-end" width="100">Qty</th>
-                                <th class="border-top-0 text-end" width="130">Total</th>                                
-                                <th class="border-top-0 text-end" width="130">Status</th>
+                                <th class="border-top-0 text-end" width="80">Qty</th>
+                                <th class="border-top-0 text-end" width="80">Price</th>
+                                <th class="border-top-0 text-end" width="80">Total</th>
+                                <th class="border-top-0 text-end" width="180">Order On</th>
+                                <th class="border-top-0 text-end" width="80">Status</th>
                             </tr>
                         </thead>                     
                         <tbody>
@@ -79,22 +81,31 @@
 
                                             <a href="{{ route('orders.detail',$value->id) }}">
                                                 @if (!empty($productImage->image))
-                                                    <img src="{{ asset('uploads/product/'.$productImage->image) }}" height="90" class="me-3 rounded">
+                                                    <img src="{{ asset('uploads/product/small/'.$productImage->image) }}" height="90" class="me-3 rounded">
                                                 @else
                                                     <img src="{{ asset('admin-assets/img/default-150x150.png') }}" height="90" class="me-3 rounded">
                                                 @endif
                                             </a>   
                                             
                                             <div class="flex-grow-1 text-truncate">
-                                                <h5 class="product-title">{{ $value->seat->table_name }}</h5>                                                                                                    
-                                                <p class="text-muted tiny-font">{{ $value->ready_time }}</p>                                                
-                                                <p class="text-muted tiny-font">{{ \Carbon\Carbon::parse($value->created_at)->format('d M, Y, h:i A') }}</p>
+                                                <h5 class="product-title">{{ $value->items->first()?->product_name }}</h5>
+                                                <p class="text-muted">
+                                                    <b>{{ $value->seat?->table_name }}</b><br />                                             
+                                                    Outlet: {{ $value->seat?->area?->area_name }}<br />
+                                                    @if($value->dinein_time)
+                                                        {{ $value->dinein_time }}<br />    
+                                                    @elseif($value->ready_time)
+                                                        {{ $value->ready_time }}<br /> 
+                                                    @endif                                                                                                        
+                                                </p>
                                             </div>                                                
                                         </div>
                                     </td>
-                                    <td>{{ $value->notes }}</td>
-                                    <td class="text-end">{{ $value->items->sum('qty') }}</td>
-                                    <td class="text-end"><h5>₹{{ round($value->total) }}</h5></td>                                    
+                                    <td>{{ $value->notes }}</td>  
+                                    <td class="text-end">{{ $value->items->sum('quantity') }}</td>
+                                    <td class="text-end">{{ $value->items->sum('price') }}</td>
+                                    <td class="text-end">₹{{ round($value->total_amount) }}</td>
+                                    <td class="text-end">{{ \Carbon\Carbon::parse($value->created_at)->format('d M, Y, h:i A') }}</td>
                                     <td class="text-end">
                                         @if ($value->status == 'running')
                                             <span class="badge bg-danger">Running</span>

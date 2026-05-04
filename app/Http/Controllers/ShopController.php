@@ -7,18 +7,17 @@ use App\Models\Menu;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
-class ShopController extends Controller
-{
+class ShopController extends Controller {
     public function index(Request $request, $menuSlug = null) {       
-        $menuSelected = ' ';
+        //$menuSelected = ' ';
 
         $categories = Category::orderBy("name","ASC")->with('menus')->get();        
         $products = Product::where('status',1);
 
         if(!empty($menuSlug)) {
             $menus = Menu::where('slug',$menuSlug)->first();
-            $products = $products->where('menu_id',$menus->id);
-            $menuSelected = $menus->id;
+            //$products = $products->where('menu_id',$menus->id);
+            //$menuSelected = $menus->id;
         }
 
         // Price slider
@@ -51,7 +50,7 @@ class ShopController extends Controller
 
         $data['categories'] = $categories;
         $data['products'] = $products;        
-        $data['menuSelected'] = $menuSelected;
+        //$data['menuSelected'] = $menuSelected;
         $data['priceMax'] = (intval($request->get('price_max')) == 0 ? 1000 : $request->get('price_max'));
         $data['priceMin'] = intval($request->get('price_min'));
         

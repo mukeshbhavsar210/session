@@ -53,30 +53,53 @@ class ProductController extends Controller {
         $validator = Validator::make($request->all(),$rules);
 
         if ($validator->passes()) {
-            $data = new Product;
-            $data->name = $request->name;            
-            $data->slug = $request->slug;                 
-            $data->category_id = $request->category;
-            $data->menu_id = $request->menu;
-            $data->description = $request->description;
-            $data->price = $request->price;
-            $data->compare_price = $request->compare_price;
-            $data->veg_nonveg = $request->veg_nonveg;
+            $product = new Product;
+            $product->name = $request->name;            
+            $product->slug = $request->slug;                 
+            $product->category_id = $request->category;
+            $product->menu_id = $request->menu_id;
+            $product->description = $request->description;
+            $product->price = $request->price;
+            $product->discounted_price = $request->discounted_price;
+            $product->veg_nonveg = $request->veg_nonveg;
+            $product->save();
 
-            //Image upload
-            if ($request->hasFile('image')) { 
-                $file = $request->file('image');
-                $extenstion = $file->getClientOriginalExtension();
-                $fileName = $data->slug.'_'.time().'.'.$extenstion;
-                $path = public_path().'/uploads/product/'.$fileName;
-                $manager = new ImageManager(new Driver());
-                $image = $manager->read($file);
-                $image->toJpeg(80)->save($path);
-                $image->cover(500,500)->save($path);
-                $data->image = $fileName;
+            if (!empty($request->image_array)) {                
+                foreach ($request->image_array as $temp_image_id) {  
+                    $tempImageInfo = TempImage::find($temp_image_id);
+                    if (!$tempImageInfo) {
+                        continue;
+                    }
+
+                    $ext = pathinfo($tempImageInfo->name, PATHINFO_EXTENSION);
+
+                    $productImage = new ProductImage();
+                    $productImage->product_id = $product->id;                    
+                    $productImage->image = "NULL";
+                    $productImage->save();
+
+                    $imageName = $product->id. '-' .$product->name. '-' .$productImage->id.'.'.$ext;                    
+                    $productImage->image = $imageName;
+                    $productImage->save();
+
+                    //Large Image
+                    $sourcePath = public_path().'/temp/'.$tempImageInfo->name;
+                    $destPath = public_path().'/uploads/product/large/'.$imageName;
+                    $manager = new ImageManager(new Driver());
+                    $image = $manager->read($sourcePath);
+                    $image->cover(500,400);
+                    $image->save($destPath);
+
+                    //Generate Thumnail
+                    $destPath = public_path().'/uploads/product/small/'.$imageName;
+                    $manager = new ImageManager(new Driver());
+                    $image = $manager->read($sourcePath);
+                    $image->cover(200,200);
+                    $image->save($destPath);
+                }
             }
             
-            $data->save();
+            $product->save();
 
             return redirect()->route('products.index')->with('success','Product added successfully.');
         } else {
@@ -136,7 +159,7 @@ class ProductController extends Controller {
 
 
     public function update($id, Request $request){
-        $data = Product::find($id);
+        $product = Product::find($id);
        
         $rules = [
             'name' => 'required',
@@ -145,29 +168,50 @@ class ProductController extends Controller {
         $validator = Validator::make($request->all(),$rules);
 
         if ($validator->passes()) {
-            $data->name = $request->name;            
-            $data->slug = $request->slug;     
-            $data->category_id = $request->category;
-            $data->menu_id = $request->menu;
-            $data->description = $request->description;
-            $data->price = $request->price;
-            $data->compare_price = $request->compare_price;
-            $data->veg_nonveg = $request->veg_nonveg;
+            $product->name = $request->name;            
+            $product->slug = $request->slug;     
+            $product->category_id = $request->category;
+            $product->menu_id = $request->menu;
+            $product->description = $request->description;
+            $product->price = $request->price;
+            $product->discounted_price = $request->discounted_price;
+            $product->veg_nonveg = $request->veg_nonveg;
+            $product->save();
 
-            //Image upload
-            if ($request->hasFile('image')) {
-                $file = $request->file('image');
-                $extenstion = $file->getClientOriginalExtension();
-                $fileName = time().'.'.$extenstion;
-                $path = public_path().'/uploads/product/'.$fileName;
-                $manager = new ImageManager(new Driver());
-                $image = $manager->read($file);
-                $image->toJpeg(80)->save($path);
-                $image->cover(500,500)->save($path);
-                $data->image = $fileName;
+            if (!empty($request->image_array)) {                
+                foreach ($request->image_array as $temp_image_id) {  
+                    $tempImageInfo = TempImage::find($temp_image_id);
+                    if (!$tempImageInfo) {
+                        continue;
+                    }
+
+                    $ext = pathinfo($tempImageInfo->name, PATHINFO_EXTENSION);
+
+                    $productImage = new ProductImage();
+                    $productImage->product_id = $product->id;                    
+                    $productImage->image = "NULL";
+                    $productImage->save();
+
+                    $imageName = $product->id. '-' .$product->name. '-' .$productImage->id.'.'.$ext;                    
+                    $productImage->image = $imageName;
+                    $productImage->save();
+
+                    //Large Image
+                    $sourcePath = public_path().'/temp/'.$tempImageInfo->name;
+                    $destPath = public_path().'/uploads/product/large/'.$imageName;
+                    $manager = new ImageManager(new Driver());
+                    $image = $manager->read($sourcePath);
+                    $image->cover(500,400);
+                    $image->save($destPath);
+
+                    //Generate Thumnail
+                    $destPath = public_path().'/uploads/product/small/'.$imageName;
+                    $manager = new ImageManager(new Driver());
+                    $image = $manager->read($sourcePath);
+                    $image->cover(250,150);
+                    $image->save($destPath);
+                }
             }
-
-            $data->save();
 
             return redirect()->route('products.index')->with('success','Product updated successfully.');
         } else {
@@ -176,40 +220,36 @@ class ProductController extends Controller {
     }
 
 
-    public function delete($id){
+    public function delete($id, Request $request){
         $product = Product::find($id);
 
-        File::delete(public_path('uploads/product/'.$product->image));
-        
+        if (empty($product)) {
+            $request->session()->flash('error','Product not found');
+            return response()->json([
+                'status' => false,
+                'notFound' => true,
+            ]);
+        }
+
+        $productImages = ProductImage::where('product_id',$id)->get();
+
+        if (!empty($productImages)) {
+            foreach ($productImages as $productImage) {
+                File::delete(public_path('uploads/product/large/'.$productImage->image));
+                File::delete(public_path('uploads/product/small/'.$productImage->image));
+            }
+
+            ProductImage::where('product_id',$id)->delete();
+        }
+
         $product->delete();
+
+        $request->session()->flash('success','Product deleted successfully');
 
         return redirect()->route('products.index')->with('success','Product deleted successfully.');
     }
 
 
-
-    // public function destroy($id, Request $request){
-    //     $product = Product::find($id);
-
-    //     if (empty($product)) {
-    //         $request->session()->flash('error','Product not found');
-    //         return response()->json([
-    //             'status' => false,
-    //             'notFound' => true,
-    //         ]);
-    //     }
-
-    //     File::delete(public_path('uploads/product/'.$product->image));
-
-    //     $product->delete();
-
-    //     $request->session()->flash('success','Product deleted successfully');
-
-    //     return response()->json([
-    //         'status' => true,
-    //         'message' => 'Product deleted successfully',
-    //     ]);
-    // }
 
     public function getProducts(Request $request){
 

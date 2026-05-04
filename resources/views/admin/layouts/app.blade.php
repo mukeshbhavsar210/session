@@ -55,16 +55,29 @@
                                 <small class="text-muted"></small>
                             </div>
                         </div>
+
+                        {{ Auth::guard()->user()->email }}
+						<p>{{ Auth::user()->roles()->pluck('name')->implode(', ') }}</p>
                         
                         <a class="dropdown-item" href="">
                             <i class="las la-user fs-18 me-1 align-text-bottom"></i>
                             Change Password
                         </a>
                         
-                        <a class="dropdown-item text-danger" href="">
-                            <i class="las la-power-off fs-18 me-1 align-text-bottom"></i>
-                            Logout
-                        </a>
+                        <a href="{{ route('profile.edit') }}" class="dropdown-item">
+							<i class="las la-user fs-18 me-1 align-text-bottom"></i>
+							Profile
+						</a>
+
+                        <form method="POST" action="{{ route('logout') }}" >
+							@csrf
+                                <a href="{{ route('logout') }}"
+                                    onclick="event.preventDefault();
+                                    this.closest('form').submit();" class="dropdown-item text-danger">
+                                <i class="las la-power-off fs-18 me-1 align-text-bottom"></i>
+                                {{ __('Log Out') }}
+						    </a>
+						</form>
                     </div>
                 </li>
             </ul>
@@ -134,12 +147,12 @@
 <script src="{{ asset('admin-assets/js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('admin-assets/js/simplebar.min.js') }}"></script>
 <script src="{{ asset('admin-assets/js/app.js') }}"></script>
-{{-- <script src="{{ asset('admin-assets/js/admin_documentReady.js') }}"></script>
+<script src="{{ asset('admin-assets/js/admin_documentReady.js') }}"></script>
 <script src="{{ asset('admin-assets/plugins/dropzone/min/dropzone.min.js') }}"></script>
 <script src="{{ asset('admin-assets/plugins/summernote/summernote-bs4.min.js') }}"></script>
 <script src="{{ asset('admin-assets/plugins/select2/js/select2.min.js') }}"></script>
 <script src="{{ asset('admin-assets/js/datetimepicker.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> --}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script type="text/javascript">
     $(document).ready(function () {            
@@ -260,8 +273,6 @@
             }
         });
     });
-
-    
 </script>
 
 @yield('customJs')

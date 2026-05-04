@@ -12,9 +12,9 @@ use Illuminate\Support\Facades\File;
 use Intervention\Image\ImageManager;
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\Drivers\Gd\Driver;
+use Illuminate\Support\Str;
 
-class MenuController extends Controller
-{
+class MenuController extends Controller {
     public function index(Request $request){
         $categories = Category::orderBy('name','ASC')->get();
         $menus = Menu::orderBy('name','ASC')->get();
@@ -55,11 +55,30 @@ class MenuController extends Controller
         if($validator->passes()){
             $data = new Menu();
             $data->name = $request->name;
-            $data->slug = $request->slug;
+            $data->slug = $request->slug;            
             $data->category_id = $request->category;
-            $data->save();
+            $data->save(); // 🔥 Save first to get ID
 
-            return redirect()->route('categories.index')->with('success','Menu added successfully.');
+            // Image upload
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $extension = $file->getClientOriginalExtension();
+
+                $fileName = $data->id . '_' . $data->slug . '.' . $extension;
+
+                $path = public_path('/uploads/menu/' . $fileName);
+
+                $manager = new ImageManager(new Driver());
+                $image = $manager->read($file);
+
+                $image->toJpeg(100)->save($path);
+                $image->cover(400, 300)->save($path);
+
+                $data->image = $fileName;
+                $data->save(); // update with image
+            }            
+
+            return redirect()->route('categories.index')->with('success','Menu Item added successfully.');
         } else {
             return redirect()->route('categories.index')->withInput()->withErrors($validator);
         }
@@ -152,11 +171,12 @@ class MenuController extends Controller
         return response()->json(["success"=> "Menu deleted"]);        
     }
     
-
     public function delete($id){
         $menu = Menu::find($id);
+        File::delete(public_path().'/uploads/menu/'.$menu->image);        
         $menu->delete();
 
         return redirect()->route('categories.index')->with('success','Menu deleted successfully.');
-    }
+    }    
+
 }

@@ -94,7 +94,7 @@ class AreaController extends Controller {
             $menu->table_name = $request->table_name;
             $menu->slug = $request->slug;
             $menu->product_code = $request->qr_generate;            
-            $menu->seating_capacity = $request->seating_capacity;
+            $menu->capacity = $request->capacity;
             $menu->save();
 
             $request->session()->flash('success', 'Table added successfully');

@@ -30,10 +30,11 @@ class FrontController extends Controller {
 
     //Wishlist page
     public function wishlist() {
-        $products = Product::orderBy('id','DESC')->get();        
+        $products = Product::orderBy('id','DESC')->with('product_images')->get();
         $data = [
             'products'=> $products,            
-        ];
+        ];        
+
         return view('front.home.wishlist', $data);        
     }
 
@@ -221,46 +222,82 @@ class FrontController extends Controller {
     }
 
 
-
-
-    public function dinening_store (Request $request){
+    public function make_order (Request $request){
         $validator = Validator::make($request->all(), [
-                   
+             
         ]);
 
         $session_id = mt_rand(1000000000, 9999999999);        
         Session::put('session_id',$session_id);
-
         $cart = Session::get('cart');
+        $total = 0;
+
+        if (session('cart')) {
+            foreach (session('cart') as $item) {
+                $total += $item['price'] * $item['quantity'];
+            }
+        }
 
         if ($validator->passes()) {
-            $dinein = new Order();
-            $dinein->session_id = session('session_id'); 
-            $dinein->order_type = $request->order_type;
-            $dinein->notes = $request->notes;
-            $dinein->ready_time = $request->ready_time;
-            $dinein->total = $request->total;
-            $dinein->save();
+            $order = new Order();
+            $order->order_type = $request->order_type;
+            $order->session_id = session('session_id');
+            $order->notes = $request->notes;
+            $order->ready_time = $request->ready_time;
 
-            foreach ($cart as $data) {     
-                $order = new OrderItem;
-                $order->order_id = $dinein->id;
-                $order->seat_id = $request->table_number;
-                $order->name = $data['name'];
-                $order->price = $data['price'];
-                $order->qty = $data['quantity'];
-                $order->image = $data['image'];
-                $order->total = $data['price']*$data['quantity'];
-                $order->save();
+            $order->seat_id = $request->seat_id;
+            $order->dinein_time = $request->dinein_time;
+
+            $order->customer_name = $request->name;
+            $order->customer_email = $request->email;
+            $order->customer_phone = $request->phone;
+            
+            $order->customer_name = $request->name;
+            $order->customer_email = $request->email;
+            $order->customer_phone = $request->phone;
+            $order->delivery_address = $request->address;
+
+            // Type-specific handling
+            if ($request->order_type === 'dinein') {
+                $order->seat_id = $request->seat_id;
+                //$order->table_number = $request->table_number;
+                $order->dinein_time = $request->time;
             }
 
+            if ($request->order_type === 'takeaway') {
+                $order->customer_name = $request->name;
+                $order->customer_email = $request->email;
+                $order->customer_phone = $request->phone;
+            }
+
+            if ($request->order_type === 'delivery') {
+                $order->customer_name = $request->name;
+                $order->customer_email = $request->email;
+                $order->customer_phone = $request->phone;
+                $order->delivery_address = $request->address;
+            }
+
+            $order->total_amount = $total;
+            $order->save();
+
+            foreach (session('cart') as $id => $item) {
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $id,
+                    'product_name' => $item['name'],
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                    'total' => $item['quantity'] * $item['price'],
+                ]);
+            }
+           
             Session::forget('cart');
 
-            $request->session()->flash('success', 'Dinening Order placed successfully');
+            $request->session()->flash('success', 'Order placed successfully');
 
             return response()->json([
                 'status' => true,
-                'message' => 'Dinening Order added successfully'
+                'message' => 'Order added successfully'
             ]);
 
         } else {
@@ -268,106 +305,38 @@ class FrontController extends Controller {
                 'status' => false,
                 'errors' => $validator->errors()
             ]);
+
+            $request->session()->flash('success', 'Order placed successfully');
         }
     }
 
 
-    public function takeaway_store (Request $request){
-        $validator = Validator::make($request->all(), [
-                   
-        ]);
+    public function increase(Request $request) {
+        $cart = session()->get('cart', []);
 
-        $session_id = Str::random(10);
-        Session::put('session_id',$session_id);
-
-        $cart = Session::get('cart');
-
-        if ($validator->passes()) {
-            $takeway = new Order();
-            $takeway->session_id = session('session_id'); 
-            $takeway->order_type = $request->order_type;                   
-            $takeway->notes = $request->notes;
-            $takeway->ready_time = $request->ready_time;
-            $takeway->takeaway_name = $request->takeaway_name;
-            $takeway->takeaway_phone = $request->takeaway_phone;
-            $takeway->takeaway_email = $request->takeaway_email;
-            $takeway->total = $request->total;
-            $takeway->save();
-
-            foreach ($cart as $data) {     
-                $order = new OrderItem;
-                $order->order_id = $takeway->id;
-                $order->name = $data['name'];
-                $order->price = $data['price'];
-                $order->qty = $data['quantity'];
-                $order->total = $data['price']*$data['quantity'];
-                $order->save();
-            }
-
-            Session::forget('cart');
-
-            $request->session()->flash('success', 'Takeaway placed successfully');
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Takeaway added successfully'
-            ]);
-
-        } else {
-            return response()->json([
-                'status' => false,
-                'errors' => $validator->errors()
-            ]);
+        if (isset($cart[$request->id])) {
+            $cart[$request->id]['quantity']++;
         }
+
+        session()->put('cart', $cart);
+
+        return response()->json(['status' => true]);
     }
 
-    public function delivery_store (Request $request){
-        //dd($request->all());
-        $validator = Validator::make($request->all(), [
-                   
-        ]);
+    public function decrease(Request $request) {
+        $cart = session()->get('cart', []);
 
-        $session_id = Str::random(10);
-        Session::put('session_id',$session_id);
+        if (isset($cart[$request->id])) {
 
-        $cart = Session::get('cart');
-
-        if ($validator->passes()) {
-            $delivery = new Order();
-            $delivery->session_id = session('session_id'); 
-            $delivery->order_type = $request->order_type;                   
-            $delivery->notes = $request->notes;
-            $delivery->ready_time = $request->ready_time;
-            $delivery->address = $request->address;
-            $delivery->delivery_name = $request->delivery_name;
-            $delivery->delivery_phone = $request->delivery_phone;
-            $delivery->delivery_email = $request->delivery_email;
-            $delivery->total = $request->total;
-            $delivery->save();
-
-            foreach ($cart as $data) {     
-                $order = new OrderItem;
-                $order->order_id = $delivery->id;
-                $order->name = $data['name'];
-                $order->price = $data['price'];
-                $order->qty = $data['quantity'];
-                $order->total = $data['price']*$data['quantity'];
-                $order->save();
+            if ($cart[$request->id]['quantity'] > 1) {
+                $cart[$request->id]['quantity']--;
+            } else {
+                unset($cart[$request->id]); // remove item
             }
-
-            Session::forget('cart');
-            $request->session()->flash('success', 'Delivery placed successfully');
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Delivery added successfully'
-            ]);
-
-        } else {
-            return response()->json([
-                'status' => false,
-                'errors' => $validator->errors()
-            ]);
         }
+
+        session()->put('cart', $cart);
+
+        return response()->json(['status' => true]);
     }
 }

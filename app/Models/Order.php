@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Order extends Model
-{
+class Order extends Model {
     use HasFactory;
+
+    protected $fillable = ['order_type', 'session_id', 'seat_id', 'dinein_time', 'customer_name', 'customer_phone', 'customer_email',
+        'notes', 'ready_time', 'delivery_address', 'total_amount', 'payment', 'status'
+    ];
 
     public function items(){
         return $this->hasMany(OrderItem::class);
@@ -33,8 +36,12 @@ class Order extends Model
     //     return $this->belongsTo(Order::class);
     // }
 
-    public function seat(){
-        return $this->belongsTo(Seat::class, 'seat_id');
-    }   
+    public function seat() {
+        return $this->belongsTo(Seat::class);
+    }
+
+    // public function seat(){
+    //     return $this->belongsTo(Seat::class, 'seat_id');
+    // }   
     
 }

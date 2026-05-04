@@ -35,7 +35,7 @@ class QrController extends Controller
             $menu = new Seating();
             $menu->area_id = $request->area;
             $menu->name = $request->name;            
-            $menu->seating_capacity = $request->seating_capacity;
+            $menu->capacity = $request->capacity;
             $menu->save();
 
             $request->session()->flash('success', 'Table added successfully');

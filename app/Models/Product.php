@@ -4,8 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Product extends Model
-{
+class Product extends Model {
+
+    protected $fillable = ['name','slug','category_id','menu_id','description','price','discounted_price','veg_nonveg','status'];
+
     public function seat(){
         return $this->hasMany(Seat::class);
     }

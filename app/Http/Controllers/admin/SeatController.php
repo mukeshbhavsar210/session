@@ -51,7 +51,7 @@ class SeatController extends Controller
             $menu->area_id = $request->area_name;
             $menu->table_name = $request->table_name;
             $menu->table_slug = $request->slug;          
-            $menu->seating_capacity = $request->seating_capacity;
+            $menu->capacity = $request->capacity;
             $menu->save();
 
             $request->session()->flash('success', 'Table added successfully');

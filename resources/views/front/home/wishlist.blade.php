@@ -6,7 +6,7 @@
     <section class="menu-products-section menu-products-section--grid">
         <div class="menu-grid">
             @if(session('wishlist'))
-                @foreach(session('wishlist') as $id => $details)
+                @foreach(session('wishlist') as $id => $value)
                     <div class="menu-product">
                         <div class="menu-product__item">
                             <div class="wishlist">
@@ -16,12 +16,21 @@
                                 </a>
                             </div>
                             <div class="menu-product__item__img">
-                                <img src="{{ asset('uploads/product/'.$details['image']) }}" >  
+                                @php
+                                    $product = \App\Models\Product::with('product_images')->find($id);
+                                    $productImage = $product?->product_images->first();
+                                @endphp
+
+                                @if (!empty($value['image']))
+                                    <img src="{{ asset('uploads/product/large/'.$value['image']) }}">
+                                @elseif (!empty($productImage?->image))
+                                    <img src="{{ asset('uploads/product/large/'.$productImage->image) }}">
+                                @endif                                
                             </div>
                             <div class="menu-product__item__top-block">
-                                <div class="menu-product__item__name text-overflow">{{ $details['name'] }}</p></div>
+                                <div class="menu-product__item__name text-overflow">{{ $value['name'] }}</p></div>
                                 <div class="menu-product__item__price no-wrap">
-                                    ₹  {{ $details['price'] }}
+                                    ₹{{ $value['price'] }}
                                 </div>
                             </div>
                         </div>

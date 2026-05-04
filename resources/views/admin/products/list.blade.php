@@ -74,7 +74,7 @@
 
                                             <a href="{{ route('products.edit', $value->id) }}" class="show-tooltip">
                                                 @if (!empty($productImage->image))
-                                                    <img src="{{ asset('uploads/product/'.$productImage->image) }}" height="90" class="me-3 align-self-center rounded" >
+                                                    <img src="{{ asset('uploads/product/small/'.$productImage->image) }}" height="90" class="me-3 align-self-center rounded" >
                                                 @else
                                                     <img src="{{ asset('admin-assets/img/default-150x150.png') }}" alt="" height="90" class="me-3 align-self-center rounded" />
                                                 @endif
@@ -89,7 +89,7 @@
                                     <td>{{ $value->description }}</td>
                                     <td class="text-end">
                                         <h5 class="mb-0">₹{{ round($value->price) }}</h5>
-                                        <p class="text-muted tiny-font"><del>₹{{ round($value->compare_price) }}</del></p>
+                                        <p class="text-muted tiny-font"><del>₹{{ round($value->discounted_price) }}</del></p>
                                     </td>
                                     <td class="text-end">
                                         <div class="pull-right">
@@ -116,13 +116,9 @@
                                     @endforeach
                                 @else
                                 <tr>
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <div class="center">
-                                                Records not found
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <td>
+                                        <h5>Product not created yet.</h5>
+                                    </td>
                                 </tr>
                             @endif
                         </tbody>
@@ -132,111 +128,148 @@
         </div>
     </div>
 
-<div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true" style="display: none;">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+<div class="modal fade drawer right-align" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Add Product</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
+                <h5 class="modal-title" id="exampleModalLabel">Add Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
 
-        <form {{ route('products.store') }} method="post" enctype="multipart/form-data">
-                @csrf
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-12 col-12">
-                            <div class="produtName">
-                                <div class="form-group mb-0">
-                                    <label for="name">Item Name</label>
-                                    <input type="text" name="name" id="name" class="form-control slug-source" placeholder="Name" data-target="#slug" >
-                                    <input type="hidden" readonly name="slug" id="slug" class="form-control">
-                                    <p class="error"></p>                                    
-                                </div>
+            <form {{ route('products.store') }} method="post" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-12 col-12">
+                                <div class="produtName">
+                                    <div class="form-group mb-0">
+                                        <label for="name">Item Name</label>
+                                        <input type="text" name="name" id="name" class="form-control slug-source" placeholder="Name" data-target="#slug" >
+                                        <input type="hidden" readonly name="slug" id="slug" class="form-control">
+                                        <p class="error"></p>                                    
+                                    </div>
 
-                                <div class="vegContainer">
-                                    <div class="btn-group" name="veg_nonveg" id="options" data-toggle="buttons">
-                                        <label class="btn btn-default active">
-                                        <input type="radio" checked name="veg_nonveg" id="option1" class="btn-check" value="Veg">
-                                            <div class="innerView">
-                                                <img src="{{ asset('admin-assets/img/veg.svg') }}" alt="" >
-                                            </div>                                          
-                                        </label>
-    
-                                        <label class="btn btn-default" >
-                                        <input type="radio" name="veg_nonveg" id="option2" class="btn-check" value="Non-veg" >
-                                            <div class="innerView">
-                                                <img src="{{ asset('admin-assets/img/non-veg.svg') }}" alt="" >
-                                            </div>
-                                        </label>
+                                    <div class="form-group mb-0">
+                                        <label for="name">Veg/Non-Veg?</label><br />
+                                        <div class="btn-group mt-1" role="group" aria-label="Basic radio toggle button group">
+                                            <input type="radio" class="btn-check" name="veg_nonveg" value="Veg" id="btnradio1" autocomplete="off" checked>
+                                            <label class="btn btn-outline-secondary" for="btnradio1">Veg</label>
                                         
-                                        <label class="btn btn-default" >
-                                        <input type="radio" name="veg_nonveg" id="option3" class="btn-check" value="Egg" >
-                                            <div class="innerView">
-                                                <img src="{{ asset('admin-assets/img/egg.svg') }}" alt="" >
-                                            </div>
-                                        </label>
+                                            <input type="radio" class="btn-check" name="veg_nonveg" value="Non-Veg" id="btnradio2" autocomplete="off">
+                                            <label class="btn btn-outline-secondary" for="btnradio2">Non-Veg</label>
+                                        
+                                            <input type="radio" class="btn-check" name="veg_nonveg" value="Egg" id="btnradio3" autocomplete="off">
+                                            <label class="btn btn-outline-secondary" for="btnradio3">Egg</label>
+                                        </div>
+                                    </div>
+                                    
+                                    {{-- <div class="vegContainer">
+                                        <div class="btn-group" name="veg_nonveg" id="options" data-toggle="buttons">
+                                            <label class="btn btn-default active">
+                                            <input type="radio" checked name="veg_nonveg" id="option1" class="btn-check" value="Veg">
+                                                <div class="innerView">
+                                                    <img src="{{ asset('admin-assets/img/veg.svg') }}" alt="" >
+                                                </div>                                          
+                                            </label>
+        
+                                            <label class="btn btn-default" >
+                                            <input type="radio" name="veg_nonveg" id="option2" class="btn-check" value="Non-veg" >
+                                                <div class="innerView">
+                                                    <img src="{{ asset('admin-assets/img/non-veg.svg') }}" alt="" >
+                                                </div>
+                                            </label>
+                                            
+                                            <label class="btn btn-default" >
+                                            <input type="radio" name="veg_nonveg" id="option3" class="btn-check" value="Egg" >
+                                                <div class="innerView">
+                                                    <img src="{{ asset('admin-assets/img/egg.svg') }}" alt="" >
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div> --}}
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-6">
+                                <div class="form-group">
+                                    <label for="price">Price</label>
+                                    <input type="number" name="price" id="price" class="form-control" placeholder="Price">
+                                    <p class="error"></p>
+                                </div>
+                            </div>  
+                            <div class="col-md-6 col-6">
+                                <div class="form-group">
+                                    <label for="discounted_price">Discount Price</label>
+                                    <input type="number" name="discounted_price" id="discounted_price" class="form-control" placeholder="Offer Price">
+                                    <p class="error"></p>
+                                </div>
+                            </div>                                                  
+                            <div class="col-md-12 col-12">
+                                <div class="row">
+                                    <div class="col-md-6 col-6">
+                                        <div class="form-group">
+                                            <label for="category">Choose Category</label>
+                                            <select name="category" id="category" class="form-select">
+                                                <option value="">Select</option>
+                                                @if ($categories->isNotEmpty())
+                                                    @foreach ($categories as $category)
+                                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                                    @endforeach
+                                                @endif
+                                            </select>
+                                            <p class="error"></p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-6">
+                                        <div class="form-group">
+                                            <label for="menu">Menu Item</label>
+                                            <select name="menu_id" id="menu_item" class="form-select">
+                                                <option value="">Select</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
+                            </div>                   
+                            {{-- <div class="col-md-12 col-12">
+                                <div class="form-group">                                                                
+                                    <label for="image">Picture</label>
+                                    <input type="file" class="form-control" name="image" />
+                                </div>                                
+                            </div> --}}
+                            <div class="col-md-12 col-12">
+                                <div class="form-group">
+                                    <label for="description">Description</label>
+                                    <textarea name="description" id="description" cols="2" rows="2" class="form-control" placeholder="Description"></textarea>
+                                </div>
+                                                         
+                                <div id="image" class="dropzone dz-clickable mt-3 mb-2">
+                                    <div class="dz-message needsclick">Drop Product Image</div>
+                                </div>                            
+
+                                <div class="row">
+                                    @if(isset($product) && $product->images->isNotEmpty())                        
+                                        <div id="product-gallery" class="row">                                    
+                                            @foreach ($product->images as $index => $image)
+                                                <div class="col-2 uploaded-images" id="image-row-{{ $image->id }}">                                        
+                                                    <input type="hidden" name="image_array[{{ $index }}][image_id]" value="{{ $image->id }}">
+                                                    <img src="{{ asset('uploads/product/small/'.$image->image) }}" class="rounded" />
+
+                                                    <a href="javascript:void(0)" class="deleteProductImg delete-icon-edit" data-id="{{ $image->id }}">
+                                                        <span class="sprites"></span>
+                                                    </a>
+                                                </div>
+                                            @endforeach                                                            
+                                        </div>                               
+                                    @endif
+                                                    
+                                    <div class="row" id="product-gallery"></div>         
+                                </div> 
                             </div>
                         </div>
-                        <div class="col-md-6 col-6">
-                            <div class="form-group">
-                                <label for="price">Price</label>
-                                <input type="number" name="price" id="price" class="form-control" placeholder="Price">
-                                <p class="error"></p>
-                            </div>
-                        </div>  
-                        <div class="col-md-6 col-6">
-                            <div class="form-group">
-                                <label for="compare_price">Office Price</label>
-                                <input type="number" name="compare_price" id="compare_price" class="form-control" placeholder="Offer Price">
-                                <p class="error"></p>
-                            </div>
-                        </div>                                                  
-                        <div class="col-md-12 col-12">
-                            <div class="row">
-                                <div class="col-md-6 col-6">
-                                    <div class="form-group">
-                                        <label for="category">Choose Menu</label>
-                                        <select name="category" id="category" class="form-control">
-                                            <option value="">Select</option>
-                                            @if ($categories->isNotEmpty())
-                                                @foreach ($categories as $category)
-                                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                                @endforeach
-                                            @endif
-                                        </select>
-                                        <p class="error"></p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-6">
-                                    <div class="form-group">
-                                        <label for="menu">Item category</label>
-                                        <select name="menu" id="sub_category" class="form-control">
-                                            <option value="">Select</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>                   
-                        <div class="col-md-12 col-12">
-                            <div class="form-group">                                                                
-                                <label for="image">Picture</label>
-                                <input type="file" class="form-control" name="image" />
-                            </div>                                
-                        </div>
-                        <div class="col-md-12 col-12">
-                            <div class="form-group">
-                                <label for="description">Description</label>
-                                <textarea name="description" id="description" cols="5" rows="4" class="form-control" placeholder="Description"></textarea>
-                            </div>
-                        </div>                            
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Create</button>
-                </div>
-            </form>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Create</button>
+                    </div>
+                </form>
         </div>
     </div>
 </div>
@@ -253,9 +286,9 @@
             data: {category_id:category_id},
             dataType: 'json',
             success: function(response) {
-                $("#sub_category").find("option").not(":first").remove();
+                $("#menu_item").find("option").not(":first").remove();
                 $.each(response["subCategories"],function(key,item){
-                    $("#sub_category").append(`<option value='${item.id}' >${item.name}</option>`)
+                    $("#menu_item").append(`<option value='${item.id}' >${item.name}</option>`)
                 })
             },
             error: function(){
@@ -263,5 +296,49 @@
             }
         });
     })
+
+     Dropzone.autoDiscover = false;
+        const dropzone = $("#image").dropzone({
+            url:  "{{ route('temp-images.create') }}",
+            maxFiles: 5,
+            paramName: 'image',
+            addRemoveLinks: true,
+            acceptedFiles: "image/jpeg,image/png,image/gif",
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }, success: function(file, response){
+                $("#image_id").val(response.image_id);
+                console.log(response)
+
+               var html = `<div class="col-md-4 col-6" id="image-row-${response.image_id}">
+                    <div class="uploaded-img">
+                        <input type="hidden" name="image_array[]" value="${response.image_id}" >
+                        <img src="${response.ImagePath}" class="img-fluid rounded" />
+                        <a href="javascript:void(0)" onclick="deleteImage(${response.image_id})" class="deleteCardImg delete-icon">
+                            <span class="sprites"></span>
+                        </a>
+                    </div>
+                </div>`;
+
+                $("#product-gallery").append(html);
+            },
+            complete: function(file){
+                this.removeFile(file);
+            }
+        });
+
+        function deleteImage(id){
+            $("#image-row-"+id).remove();
+        }
+
+    $(document).ready(function () {
+        $('input[name="veg_nonveg"]').on('change', function () {
+            // remove active from all labels
+            $('input[name="veg_nonveg"]').closest('label').removeClass('active');
+
+            // add active to selected one
+            $(this).closest('label').addClass('active');
+        });
+    });
 </script>
 @endsection
