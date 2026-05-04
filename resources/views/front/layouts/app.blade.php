@@ -4,6 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>@yield('title')</title>
 	<link rel="stylesheet" type="text/css" href="{{ asset('front-assets/css/style.min.css') }}" />
+	{{-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"> --}}
 	<link rel="stylesheet" type="text/css" href="{{ asset('front-assets/css/style.css') }}" />
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
 	<link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,71 +13,69 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
-<body class="bodyClass">
-	<div class="page">
-		<div id="menu-page" class="page" style="display:flex;flex-direction:column;top:0px;">
-			<header id="sticky-header">
-				<div class="header">
-					<div class="header__restaurant-name">
-						<a href="{{ route('front.home') }}" class="logo"><img style="width: 120px" src="{{ asset('front-assets/images/logo.jpg') }} " alt=""></a>
-						<div class="float-end">
-							@if (Route::has('login'))
-								@auth
-									<a href="{{ url('/dashboard') }}" target="_blank" >Dashboard</a>
-								@else
-									<a href="{{ route('login') }}" target="_blank" >Log in</a>
-									@if (Route::has('register'))
-										<a href="{{ route('register') }}" target="_blank" >Register</a>
-									@endif
-								@endauth
+<body>
+<div class="app-wrapper">		
+	<header id="sticky-header">
+		<div class="header">
+			<div class="header__restaurant-name">
+				<a href="{{ route('front.home') }}" class="logo" >
+					<img style="width: 120px" src="{{ asset('front-assets/images/logo.jpg') }} " alt=""></a>
+				<div class="float-end">
+					@if (Route::has('login'))
+						@auth
+							<a href="{{ url('/dashboard') }}" target="_blank" >Dashboard</a>
+						@else
+							<a href="{{ route('login') }}" target="_blank" >Log in</a>
+							@if (Route::has('register'))
+								<a href="{{ route('register') }}" target="_blank" >Register</a>
 							@endif
-						</div>
-					</div>
-				</div>	
-			</header>
-
-			<section class="categories-section categories-section--medium-photo">
-				<div class="categories-section__container">							
-					@if(session('wishlist'))
-						<div class="menu-category">	
-							<div class="menu-category__img">
-								<a href="{{  route('front.wishlist') }}">
-									<img src="https://instalacarte.com/media/cache/emoji_small/emoji/favourite.png?v3" alt="Favourites">
-									<div class="menu-category__name no-wrap"><div>
-										Favourites 
-									</div>
-								</a>
-							</div>
-						</div>
-					</div>
-				@endif
-					@if (getCategories()->isNotEmpty())
-						@foreach (getCategories() as $value )	
-							<div class="menu-category">	
-								<div class="menu-category__img">
-									<a href="{{ route('front.menu',[$value->slug])}}" >
-										@if ($value->image != "")
-											<img src="{{ asset('uploads/category/'.$value->image) }} " alt="">
-										@else
-											<img src="{{ asset('admin-assets/img/default-150x150.png') }}" alt="" />
-										@endif
-									</a>	
-								</div>
-								<div class="menu-category__name no-wrap">
-									<div><a href="{{ route('front.menu',[$value->slug])}}" >{{ $value->name }}</a></div>
-								</div>
-							</div>
-						@endforeach
+						@endauth
 					@endif
 				</div>
-			</section>
-    		@yield('content')
-		</div>
-	</div>
+			</div>
+		</div>	
+	</header>
 
-<script src="{{ asset('front-assets/js/jquery-3.7.1.js') }}"></script>
-<script src="{{ asset('front-assets/js/bootstrap.min.js') }}"></script>
-<script src="{{ asset('front-assets/js/custom.js') }}"></script>
+	<section class="categories-section categories-section--medium-photo">
+	<div class="categories-section__container">							
+		@if(session('wishlist'))
+			<div class="menu-category">	
+				<div class="menu-category__img">
+					<a href="{{ route('front.wishlist') }}">									
+						<img src="{{ asset('front-assets/images/favourite.png') }}" alt="Favourites">									
+						<div class="menu-category__name no-wrap"><div>
+							Favourites 
+						</div>
+					</a>
+				</div>
+			</div>						
+		@endif
+			@if (getCategories()->isNotEmpty())
+				@foreach (getCategories() as $value )	
+					<div class="menu-category">	
+						<div class="menu-category__img">
+							<a href="{{ route('front.menu',[$value->slug])}}" >
+								@if ($value->image != "")
+									<img src="{{ asset('uploads/category/'.$value->image) }} " alt="">
+								@else
+									<img src="{{ asset('admin-assets/img/default-150x150.png') }}" alt="" />
+								@endif
+							</a>	
+						</div>
+						<div class="menu-category__name no-wrap">
+							<div><a href="{{ route('front.menu',[$value->slug])}}" >{{ $value->name }}</a></div>
+						</div>
+					</div>
+				@endforeach
+			@endif
+		</div>
+	</section>
+	@yield('content')		
+</div>
+
+<script src="{{ asset('front-assets/js/jquery-3.6.0.min.js') }}"></script>
+<script src="{{ asset('front-assets/js/bootstrap.bundle.5.1.3.min.js') }}"></script>
+<script src="{{ asset('front-assets/js/documentReady.js') }}"></script>
 <script>
     $.ajaxSetup({
         headers: {
@@ -118,6 +117,7 @@
 			});
 		});   
 </script>
+
 @yield('customJs')
 
 </body>

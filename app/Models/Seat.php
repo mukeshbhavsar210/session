@@ -14,12 +14,20 @@ class Seat extends Model
         return $this->belongsTo(OrderItem::class);
     }
 
+    // public function area(){
+    //     return $this->belongsTo(Area::class, 'id');
+    // }
+
     public function area(){
-        return $this->belongsTo(Area::class, 'id');
+        return $this->belongsTo(Area::class);
     }
 
     public function order(){
         return $this->belongsTo(Order::class, 'status');
+    }
+
+    public function orders(){
+        return $this->hasMany(Order::class);
     }
 
     public function assigned_seat(){

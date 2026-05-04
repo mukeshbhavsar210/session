@@ -4,20 +4,22 @@
 
 
 
-<div class="menu-content--categories-medium-photo menu-content">
-    <section class="menu-products-section menu-products-section--grid">
-        <div class="menu-grid">
-            @if(!empty($products))
-                @foreach($products as $value)
+<section class="menu-products-section menu-products-section--grid">
+    <div class="menu-grid">
+        @if(!empty($products))
+            @foreach($products as $value)
                 <div class="menu-product">
                     <div class="menu-product__item">
-                        @if(session('cart'))
-                            @foreach(session('cart') as $id => $details)
-                                <div class="menu-product__item__ordered_qty">
-                                    {{ $details['quantity'] }}
-                                </div>
-                            @endforeach
+                        @php
+                            $cart = session('cart', []);
+                        @endphp
+
+                        @if(isset($cart[$value->id]))                            
+                            <div class="menu-product__item__ordered_qty">
+                                {{ $cart[$value->id]['quantity'] }}
+                            </div>
                         @endif
+                        
                         <div class="menu-product__item__toolbar">
                             <div style="flex-grow: 1;"></div>
                             @if(session('wishlist'))
@@ -30,329 +32,419 @@
                                         l4.8,4.8C5.9,10.6,6,10.6,6,10.6c0.1,0,0.2,0,0.2-0.1L11,5.7c0.6-0.6,1-1.5,1-2.4S11.7,1.6,11,1z"></path></svg>
                                 </button> 
                             @else    
-                                <a href="{{ route('addwishlist', $value->id ) }}" class="btn btn--icon btn--icon--xsm add-to-wishlist-button">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#222222" stroke-width="1.2px" x="0px" y="0px" viewBox="-1 -2 14 13" xml:space="preserve"><path d="M11,1c-0.6-0.6-1.5-1-2.3-1C7.8,0,7,0.4,6.3,1L6,1.3L5.7,1C5,0.3,4.2,0,3.3,0S1.6,0.3,1,1C0.3,1.6,0,2.4,0,3.3S0.3,5,1,5.7
-                                        l4.8,4.8C5.9,10.6,6,10.6,6,10.6c0.1,0,0.2,0,0.2-0.1L11,5.7c0.6-0.6,1-1.5,1-2.4S11.7,1.6,11,1z"></path></svg>
+                                <a href="{{ route('addwishlist', $value->id ) }}" class="wishlist-icon">
+                                    <span class="sprites"></span>                                    
                                 </a>                                
                             @endif
                         </div>
-                            <a href="javascript:void(0);" data-toggle="modal" data-target="#basicModal_{{ $value->id }}" >
+                            <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#bottomModal_{{ $value->id }}">
                                 <div class="menu-product__item__img">
-                                    @if (!empty($value->image))
-                                        <img src="{{ asset('uploads/product/'.$value->image) }}" >
+                                    @php
+                                        $productImage = $value->product_images->first();
+                                    @endphp
+
+                                    @if (!empty($productImage->image))
+                                        <img src="{{ asset('uploads/product/small/'.$productImage->image) }}" alt="{{ $value->name }}" >
                                     @else
-                                        <img src="{{ asset('admin-assets/img/default-150x150.png') }}" alt="" />
-                                    @endif                                   
+                                        <img src="{{ asset('admin-assets/img/default-150x150.png') }}" alt="{{ $value->name }}"/>
+                                    @endif                                                                       
                                 </div>
                             </a>
                             <div class="menu-product__item__top-block">
-                                <div class="menu-product__item__name text-overflow">{{ $value->name }}</div>
-                                <div class="menu-product__item__price no-wrap">
-                                    ₹ {{ $value->price }}
-                                    {{-- @if ($value->compare_price > 0)
-                                        <span class="text-underline"><del>₹ {{ $value->compare_price }}</del></span>
-                                    @endif --}}
-                                </div>
-
-                                <div class="product-details">
-                                    <a href="{{ route('front.addCart', $value->id ) }}" class="btn btn-primary">Add</a>
-                                    <span id="adding-cart-{{ $value->id }}" style="display:none;">Added.</span>
+                                <div class="menu-product__item__name text-overflow ">
+                                    <div class="flex-justify">
+                                        <p>{{ $value->name }}</p>
+                                        <p>₹{{ round($value->price) }}</p>
+                                    </div>
+                                    {{-- <div class="menu-product__item__price no-wrap">                                        
+                                        @if ($value->discounted_price > 0)
+                                            <del>₹{{ round($value->discounted_price) }}</del>
+                                        @endif
+                                    </div> --}}
                                 </div>
                             </div>
                         </div>
-                    </div> 
-                    
-                    <!-- Modal -->
-                    <div class="modal fade" id="basicModal_{{ $value->id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog">
+                    </div>                    
+                             
+                    <div class="modal fade" id="bottomModal_{{ $value->id }}" tabindex="-1">
+                        <div class="modal-dialog modal-fullscreen">
                             <div class="modal-content">
-                                <div class="menuContainer">
+                                <div class="menuContainer">                                    
                                     <div class="product-pic">
-                                        @if (!empty($value->image))
-                                            <img class="card-img-top" src="{{ asset('uploads/product/'.$value->image) }}" >
+                                        @php
+                                            $productImage = $value->product_images->first();
+                                        @endphp
+
+                                        @if (!empty($productImage->image))
+                                            <img src="{{ asset('uploads/product/large/'.$productImage->image) }}" alt="{{ $value->name }}" >
                                         @else
-                                            <img class="card-img-top" src="{{ asset('admin-assets/img/default-150x150.png') }}" alt="" />
-                                        @endif
-                                    </div>        
-                                    <div class="btnControl">
-                                        <div class="row p-3">
-                                            <div class="col-9">
-                                                <a class="link" data-dismiss="modal" aria-label="Close">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"></path></svg>
-                                                </a>
-                                            </div>
-                                            <div class="col-3">
-                                                <a href="{{  route('front.wishlist') }}" class="link right">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-suit-heart-fill" viewBox="0 0 16 16"><path d="M4 1c2.21 0 4 1.755 4 3.92C8 2.755 9.79 1 12 1s4 1.755 4 3.92c0 3.263-3.234 4.414-7.608 9.608a.513.513 0 0 1-.784 0C3.234 9.334 0 8.183 0 4.92 0 2.755 1.79 1 4 1z"></path></svg>
-                                                </a>
-                                            </div>
-                                        </div> 
-                                    </div>
-                                    <div class="product-title">
-                                        <div class="row">
-                                            <div class="col-9">
-                                                <h3>{{ $value->name }}</h3>
-                                            </div>
-                                            <div class="col-3">
-                                                <div class="product-price">
-                                                    <span class="price"> ₹{{ $value->price }}</span>
-                                                    @if ($value->compare_price > 0)
-                                                        <span class="price text-secondary"><del> ₹{{ $value->compare_price }}</del></span>
-                                                    @endif
-                                                </div>
-                                            </div>
+                                            <img src="{{ asset('admin-assets/img/default-150x150.png') }}" alt="{{ $value->name }}" />
+                                        @endif 
+                                    </div>                                    
+                                    
+                                    <div class="btnControl flex-justify">
+                                        <a href="javascript:0" class="back-icon" data-bs-dismiss="modal" aria-label="Close">
+                                            <span class="sprites"></span>                                                            
+                                        </a>
+                                        <a href="{{ route('addwishlist', $value->id ) }}" class="wishlist-icon">
+                                            <span class="sprites"></span>                                                             
+                                        </a>                                                
+                                    </div> 
+                                    <div class="product-title flex-justify">
+                                        <h2>{{ $value->name }}</h2>
+                                        <div class="product-price">
+                                            <span class="price"> ₹{{ $value->price }}</span>
+                                            @if ($value->discounted_price > 0)
+                                                <span class="price text-secondary"><del> ₹{{ $value->discounted_price }}</del></span>
+                                            @endif
                                         </div>
                                     </div>
-                                    <div class="product-details">
-                                        {{-- <a href="javascript:void(0);" data-product-id="{{ $value->id }}" id="add-cart-btn-{{ $value->id }}" class="add-to-cart-button product-add">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"></path></svg>
-                                        </a> --}}
-                                        {{-- <span id="adding-cart-{{ $value->id }}" style="display:none;">Added.</span> --}}
+                                    <div class="product-details">   
+                                        @php
+                                            $cart = session('cart', []);
+                                            $qty = isset($cart[$value->id]) ? $cart[$value->id]['quantity'] : 0;
+                                        @endphp
+
+                                        @if($qty > 0)                                            
+                                            <div class="add-controls">
+                                                <a href="javascript:0" class="sub-qty products-sub" data-id="{{ $value->id }}">
+                                                    <span class="sprites"></span>
+                                                </a>
+
+                                                <div class="manage-qty">{{ $qty }}</div>                                                    
+
+                                                <a href="javascript:0" class="add-qty products-add" data-id="{{ $value->id }}">
+                                                    <span class="sprites"></span>
+                                                </a>
+                                            </div>
+                                        @else
+                                            <a href="{{ route('front.addCart', $value->id ) }}" class="add-to-cart-button product-add products-add">
+                                                <span class="sprites"></span>                                                    
+                                            </a>
+                                        @endif
+
                                         <p>{{ \Illuminate\Support\Str::limit(strtolower($value->description), 50) }}</p>
+
+                                        <div class="mt-3" role="group">
+                                            <label class="custom-radio mb-2" for="normal">
+                                                <input type="radio"  name="size" id="normal" checked>
+                                                <span class="radio-mark"></span>
+                                                Normal
+                                            </label>
+                                            
+                                            <label class="custom-radio" for="large">
+                                                <input type="radio" name="size" id="large">                                                
+                                                <span class="radio-mark"></span>
+                                                Large
+                                            </label>
+                                        </div>
                                     </div>
-                                </div>
+                                </div>            
                             </div>
                         </div>
                     </div>
                 @endforeach
-            @endif                       
+            @endif
         </div>
     </section>
-</div>
 
+    @if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
 
+    <?php $total = 0 ?>
+    <div class="mainCartWrapper">
+        <div class="orderDetails">
+            <div id="bottomSheet" class="bottom-sheet">
+                <div class="sheet-content">
+                    <div class="handle">
+                        @if(session()->has('cart') && count(session('cart')) > 0)
+                            Order {{ $qty }} for ₹{{ $total }}
+                            <a href="{{ url('clear-cart') }}" class="delete-icon">
+                                <span class="sprites"></span>
+                            </a>
+                        @else
+                            Order
+                        @endif
+                    </div>
+                    <div class="p-3">
+                        <div class="orderBottom">
+                            @if(session()->has('cart') && count(session('cart')) > 0)
+                                <ul class="nav nav-tabs nav-justified" id="myTab" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button data-type="dinein" class="nav-link active" id="tab_01-tab" data-bs-toggle="tab" data-bs-target="#tab_01" type="button">
+                                            Dinein
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button data-type="takeaway" class="nav-link" id="tab_02-tab" data-bs-toggle="tab" data-bs-target="#tab_02" type="button">
+                                            Takeaway
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button data-type="delivery" class="nav-link" id="tab_03-tab" data-bs-toggle="tab" data-bs-target="#tab_03" type="button">
+                                            Delivery
+                                        </button>
+                                    </li>
+                                </ul>            
 
-
-<?php $total = 0 ?>
-<div class="mainCartWrapper">
-    
-
-    <div class="orderDetails">        
-        <div class="orderBottom">
-            <div class="nav nav-tabs mb-3" role="tablist">
-                <button class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab">Dinein</button>
-                <button class="nav-link" data-toggle="tab" href="#tabs-2" role="tab">Takeaway</button>
-                <button class="nav-link" data-toggle="tab" href="#tabs-3" role="tab">Delivery</button>
-            </div>
-
-            <?php $total = 0 ?>
-            @if(session('cart'))
-                <div class="basket-page__content__products">
-                    @foreach(session('cart') as $id => $details)
-                        <form action="dining" method="POST" >
-                            @csrf
-                            <div class="row">
-                                <div class="col-7">
-                                    <img style="width: 40px; border-radius:100px; margin-right:5px;" src="{{ asset('uploads/product/'.$details['image']) }}" >  
-                                    {{ $details['quantity'] }} x {{ $details['name'] }}</p>
-                                    {{-- <input type="hidden" multiple name="name" value="{{ $details['name'] }}">
-                                    <input type="hidden" multiple name="qty" value="{{ $details['quantity'] }}"> --}}
-                                </div>
-                                <div class="col-3 p-0">
-                                    <div class="flex">
-                                        <?php 
-                                            $isEmpty = $details['quantity'];   
-                                        ?>
-                                        {{-- <input type="hidden" multiple name="name" value="{{ $details['name'] }}"> --}}
-                                        @if($isEmpty > 1)
-                                            <div class="input-group-btn">
-                                                <button class="btn--icon sub" data-id=" ">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-                                                        class="bi bi-dash-lg" viewBox="0 0 16 16">
-                                                        <path fill-rule="evenodd"
-                                                            d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"></path>
-                                                    </svg>
-                                                </button>
+                                <form id="makeOrder" name="makeOrder" method="POST">
+                                    @csrf
+                                    <div class="basket-page__content__products">
+                                        @foreach(session('cart') as $id => $value)                                                            
+                                            <div class="row">
+                                                <div class="col-7">
+                                                    <p class="mt-1">{{ $value['quantity'] }} x {{ $value['name'] }}</p>
+                                                </div>
+                                                <div class="col-3">
+                                                    <div class="flex">
+                                                        @if($value['quantity'] > 0)
+                                                            <div class="qty-box flex align-items-center">
+                                                                <a href="javascript:0" class="sub-icon sub-qty" data-id="{{ $id }}">
+                                                                    <span class="sprites"></span>                                                        
+                                                                </a>
+                                                                <a href="javascript:0" class="add-icon add-qty" data-id="{{ $id }}">
+                                                                    <span class="sprites"></span>
+                                                                </a>
+                                                            </div>
+                                                        @else
+                                                            <a href="javascript:0" class="add-to-cart add-icon add-qty" data-id="{{ $id }}">
+                                                                <span class="sprites"></span>
+                                                            </a>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                <div class="col-2">
+                                                    <div class="right">
+                                                        <p class="my-2">₹ {{ $value['price'] }}</p>                                                
+                                                    </div>
+                                                </div>
+                                                
+                                                <?php $total += $value['price'] * $value['quantity'] ?>
                                             </div>
-                                        @else
-                                            <div class="input-group-btn">
-                                                @if($isEmpty > 0)
-                                                    <button class="btn--icon sub" data-id="{{ $id }}" title="sub">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-                                                            class="bi bi-dash-lg" viewBox="0 0 16 16">
-                                                            <path fill-rule="evenodd"
-                                                                d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"></path>
-                                                        </svg>
-                                                    </button>
-                                                @else
-                                                    <button class="btn--icon delete" data-id="{{ $id }}" title="Delete">
-                                                        <i class="fa fa-trash"></i>
-                                                    </button>                                                    
-                                                @endif
+                                        @endforeach
+                                    </div>                   
+                            
+                                    <div class="basket-page__content__total">
+                                        <div>Total:</div>
+                                        <div style="flex-grow: 1;"></div>
+                                        ₹{{ $total }}
+                                    </div>
+
+                                    <input type="hidden" name="order_type" id="order_type" value="dinein" class="form-control">
+                                    <input type="hidden" name="total_amount" value="{{ $total }}" class="form-control">
+
+                                    <div class="basket-page__content__notes mb-2">
+                                        <textarea name="notes" placeholder="Add note 🙏🏻..." ></textarea>
+                                    </div>
+
+                                    <div class="basket-page__content__delivery-content mb-2">
+                                        <select class="form-select mb-2" aria-label="Default select example" name="dinein_time">
+                                            <option selected>When Ready</option>
+                                            <option value="10">10:00</option>
+                                            <option value="11">11:00</option>
+                                            <option value="12">12:00</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="tab-content" id="myTabContent">
+                                        <div class="tab-pane fade show active" id="tab_01" role="tabpanel">
+                                            <div class="basket-page__content__delivery-content mb-3">
+                                                <select name="seat_id" id="seat_id" class="form-select mb-3">
+                                                    <option value="">Table</option>
+                                                    @foreach ($seats as $value)
+                                                        {{-- @if(empty($value->area_id))
+                                                            <option value="{{ $value->id }}">
+                                                                {{ $value->table_name }}
+                                                            </option>
+                                                        @endif --}}
+                                                        @if($value->area_id == NULL)
+                                                            <option value="{{ $value->id }}">{{ $value->table_name }}</option>
+                                                        @elseif($value->area_id == '')
+                                                            <option value="{{ $value->id }}">{{ $value->table_name }}</option>
+                                                        @endif
+                                                    @endforeach
+                                                </select>
                                             </div>
-                                        @endif
-                                        <div class="input-group-btn">
-                                            <button class="btn--icon add" data-id="{{ $id }}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-                                                    class="bi bi-plus-lg" viewBox="0 0 16 16">
-                                                    <path fill-rule="evenodd"
-                                                        d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z">
-                                                    </path>
-                                                </svg>
-                                            </button>
                                         </div>
+
+                                        <div class="tab-pane fade" id="tab_02" role="tabpanel">
+                                            <div class="form-group mb-2">
+                                                <input type="text" class="form-control" placeholder="Name" name="customer_name">
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-7">
+                                                    <div class="form-group mb-3">
+                                                        <input type="email" class="form-control" placeholder="Email" name="customer_email">
+                                                    </div>
+                                                </div>
+                                                <div class="col-5">
+                                                    <div class="form-group mb-2">
+                                                        <input type="phone" class="form-control" placeholder="Phone" name="customer_phone">
+                                                    </div>
+                                                </div>
+                                            </div>  
+                                        </div>
+
+                                        <div class="tab-pane fade" id="tab_03" role="tabpanel">
+                                            <div class="basket-page__content__delivery-content mb-2" >
+                                                <textarea class="form-control" id="address" name="address" placeholder="Enter address">address</textarea>
+                                            </div>
+
+                                            <div class="form-group mb-2">
+                                                <input type="text" id="customer_name" class="form-control" placeholder="Customer Name" name="customer_name">
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-7">
+                                                    <div class="form-group mb-2">
+                                                        <input type="email" id="customer_email" class="form-control" placeholder="Email" name="customer_email">
+                                                    </div>
+                                                </div>
+                                                <div class="col-5">
+                                                    <div class="form-group mb-2">
+                                                        <input type="phone" id="customer_phone" class="form-control" placeholder="Phone" name="customer_phone">
+                                                    </div>
+                                                </div>
+                                            </div>        
+                                        </div>
+
+                                        <div style="text-align: center; margin-top: 10px;">
+                                            <div style="color: var(--ik-error-color); margin: 10px 0px; font-size: 0.9rem;">Fill all required fields</div>
+                                        </div>
+
+                                        <div class="basket-page__content__terms">By clicking Order, you confirm your age is 18+ and you agree to the <a href="https://instalacarte.com/page/privacy-policy" target="_blank">terms</a></div>
+
+                                        <div class="basket-order-button-container">
+                                            <button class="btn btn--brand basket-page__content__order-btn basket-page__content__order-btn--disabled">Order</button>
+                                        </div>                
                                     </div>
+                                </form>                
+                            @else                    
+                                <div class="emptyBag">
+                                    <img src="{{ asset('front-assets/images/empty_bag.png') }}" alt="empty bag" />
+                                    <p>Nothing to order</p>
                                 </div>
-                                <div class="col-2">
-                                    <div class="right">
-                                        <p class="my-2">₹ {{ $details['price'] }}</p>
-                                        {{-- <input type="hidden" multiple name="price" value="{{ $details['price'] }}"> --}}
-                                    </div>
-                                </div>
-                                <?php $total += $details['price'] * $details['quantity'] ?>
-                            </div>
-                    @endforeach
-                </div>
-            @endif
-            <input type="hidden" name="total" value="{{ $total }}">
-            
-            <div class="basket-page__content__total">
-                @if(!empty($details))
-                    <div>Total:</div>
-                    <div style="flex-grow: 1;"></div>
-                    ₹{{ $total }}
-                @else
-                    <div class="col-md-12">
-                        <div class="emptyBag">
-                            <img src="{{ asset('front-assets/images/empty_bag.png') }}">
-                            <h5>Nothing to order</h5>
+                            @endif
                         </div>
                     </div>
-                @endif
+                </div>
+                <div class="sheet-overlay"></div>
             </div>
-
-            @if(!empty($details))
-            <div class="tab-content">
-                <div class="tab-pane p-3 active" id="tabs-1" role="tabpanel">
-                    @include('front.home.tab_01')
-                </div>
-
-                <div class="tab-pane p-3" id="tabs-2" role="tabpanel">
-                    @include('front.home.tab_02')
-                </div>
-
-                <div class="tab-pane p-3" id="tabs-3" role="tabpanel">
-                    @include('front.home.tab_03')
-                </div>
-            </div>                
-            @endif
-        </div>
-    </div>
-
-    <div class="row" id="cartDetails">
-        @include('front.layouts.message')
-        <div class="col-11">
-            @if(!empty($details))
-                Order {{ count((array) session('cart')) }} for ₹ {{ $total }}
-            @else
-                Order 
-            @endif
-        </div>
-        <div class="col-1">
-            <a href="{{ url('clear-cart') }}" class="cart-icon"><i class="fa fa-trash"></i></a>
-        </div>
+            
+            {{-- <div class="flex-justify" id="cartDetails" data-bs-toggle="modal" data-bs-target="#orderModal">                
+                @if(session()->has('cart') && count(session('cart')) > 0)
+                    Order {{ $qty }} for ₹{{ $total }}
+                    <a href="{{ url('clear-cart') }}" class="delete-icon">
+                        <span class="sprites"></span>
+                    </a>
+                @else
+                    Order
+                @endif
+            </div> --}}
     </div>
 </div>
-
-<div class="orderOverlay"></div>
-
 @endsection
 
 @section('customJs')
 <script>
-    $('#table_number').change(function(){
-            element = $(this);
-            $("button[type=submit]").prop('disabled', true);
-            $.ajax({
-                url: '{{ route("getSlug") }}',
-                type: 'get',
-                data: {title: element.val()},
-                dataType: 'json',
-                success: function(response){
-                    $("button[type=submit]").prop('disabled', false);
-                    if(response["status"] == true){
-                        $("#slug").val(response["slug"]);
-                    }
+    $('#seat_id').change(function(){
+        element = $(this);
+        $("button[type=submit]").prop('disabled', true);
+        $.ajax({
+            url: '{{ route("getSlug") }}',
+            type: 'get',
+            data: {title: element.val()},
+            dataType: 'json',
+            success: function(response){
+                $("button[type=submit]").prop('disabled', false);
+                if(response["status"] == true){
+                    $("#slug").val(response["slug"]);
                 }
-            });
-        })
+            }
+        });
+    })
         
-    // $("#diningForm").submit(function(event){
-    //     event.preventDefault();
-    //     var element = $(this);
-    //     $("button[type=submit]").prop('disabled', true);
-    //     $.ajax({
-    //         url: '{{ route("submit.dining") }}',
-    //         type: 'post',
-    //         data: element.serializeArray(),
-    //         dataType: 'json',
-    //         success: function(response){
-    //             $("button[type=submit]").prop('disabled', false);
+    $("#makeOrder").submit(function(event){
+         event.preventDefault();
+         var element = $(this);
+         $("button[type=submit]").prop('disabled', true);
+         $.ajax({
+             url: '{{ route("submit.dining") }}',
+             type: 'post',
+             data: element.serializeArray(),
+             dataType: 'json',
+             success: function(response){
+                if (response.status) {
+                    $('#successMsg').html(
+                        '<div class="alert alert-success">' + response.message + '</div>'
+                    );
+                }
 
-    //             if(response["status"] == true){
-    //                 window.location.href="{{ route('front.home') }}"
-    //             } else {
-    //                 var errors = response['errors']
-    //             }
+                 $("button[type=submit]").prop('disabled', false);
 
-    //         }, error: function(jqXHR, exception) {
-    //             console.log("Something event wrong");
-    //         }
-    //     })
-    // });
+                 if(response["status"] == true){
+                     window.location.href="{{ route('front.home') }}"
+                 } else {
+                     var errors = response['errors']
+                 }
 
-    // $("#takeawayForm").submit(function(event){
-    //     event.preventDefault();
-    //     var element = $(this);
-    //     $("button[type=submit]").prop('disabled', true);
-    //     $.ajax({
-    //         url: '{{ route("submit.takeaway") }}',
-    //         type: 'post',
-    //         data: element.serializeArray(),
-    //         dataType: 'json',
-    //         success: function(response){
-    //             $("button[type=submit]").prop('disabled', false);
-
-    //             if(response["status"] == true){
-    //                 window.location.href="{{ route('front.home') }}"
-    //             } else {
-    //                 var errors = response['errors']
-    //             }
-
-    //         }, error: function(jqXHR, exception) {
-    //             console.log("Something event wrong");
-    //         }
-    //     })
-    // });  
-
-    // $("#deliveryForm").submit(function(event){
-    //     event.preventDefault();
-    //     var element = $(this);
-    //     $("button[type=submit]").prop('disabled', true);
-    //     $.ajax({
-    //         url: '{{ route("submit.delivery") }}',
-    //         type: 'post',
-    //         data: element.serializeArray(),
-    //         dataType: 'json',
-    //         success: function(response){
-    //             $("button[type=submit]").prop('disabled', false);
-
-    //             if(response["status"] == true){
-    //                 window.location.href="{{ route('front.home') }}"
-    //             } else {
-    //                 var errors = response['errors']
-    //             }
-
-    //         }, error: function(jqXHR, exception) {
-    //             console.log("Something event wrong");
-    //         }
-    //     })
-    // });  
-        
+             }, error: function(jqXHR, exception) {
+                 console.log("Something event wrong");
+             }
+         })
+    });
 
     //Hide alert 
     $(function() {
         setTimeout(function() { $(".alert").fadeOut(1500); }, 1500)
     })
+
+    $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+        let type = $(e.target).data('type');
+        $('#order_type').val(type);
+    });    
+
+    // Increase
+    $(document).on('click', '.add-qty', function () {
+        let id = $(this).data('id');
+
+        $.ajax({
+            url: "/cart/increase",
+            type: "POST",
+            data: { id: id },
+            success: function (res) {
+                console.log(res);
+                location.reload(); // for now
+            }
+        });
+    });
+
+    // Decrease
+    $(document).on('click', '.sub-qty', function () {
+        let id = $(this).data('id');
+
+        $.ajax({
+            url: "/cart/decrease",
+            type: "POST",
+            data: { id: id },
+            success: function (res) {
+                console.log(res);
+                location.reload();
+            }
+        });
+    });
+
+    $(document).ready(function () {        
+        $('.handle').on('click', function () {
+            $('#bottomSheet').toggleClass('active');
+        });  
+        $('.sheet-overlay').on('click', function () {
+            $('#bottomSheet').removeClass('active');
+        });      
+    });
 </script>
 @endsection

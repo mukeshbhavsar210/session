@@ -32,10 +32,10 @@ Route::get('/menu/{menuSlug?}',[ShopController::class,'index'])->name('front.men
 
 Route::controller(FrontController::class)->group(function() {
     // In your routes/web.php
-    Route::post('dining', 'dinening_store')->name('submit.dining');
-    Route::post('takeaway', 'takeaway_store')->name('submit.takeaway');
-    Route::post('delivery', 'delivery_store')->name('submit.delivery');
-    Route::post('order', 'order_store')->name('submit.order');
+    Route::post('dining', 'make_order')->name('submit.dining');    
+    Route::post('/cart/increase', 'increase')->name('cart.increase');
+    Route::post('/cart/decrease', 'decrease')->name('cart.decrease');
+    //Route::post('order', 'order_store')->name('submit.order');
 
     Route::get('/', 'show')->name('front.home');
     Route::get('area/{areaSlug?}', 'restaurant')->name('front.restaurant');
@@ -73,7 +73,8 @@ Route::group(['prefix' => 'admin'], function(){
             Route::get('/categories', 'index')->name('categories.index');        
             Route::post('/categories', 'store')->name('categories.store');
             Route::post('/category_menu', 'store_menu')->name('categories.store_menu');
-            Route::delete('/categories/{category}', 'destroy')->name('categories.delete');
+            Route::get('/categories/{id}', 'delete_category')->name('category.delete');
+            Route::delete('/categories/{category}', 'destroy')->name('categories.delete');            
         });
 
         //Sub Category Routes
@@ -82,7 +83,7 @@ Route::group(['prefix' => 'admin'], function(){
             Route::post('/menus', 'store')->name('menu.store');
             Route::get('/menus/{id}/edit', 'edit')->name('menu.edit');
             Route::post('/menus/{id}', 'update')->name('menu.update');
-            Route::get('/menus/{id}', 'delete')->name('menu.delete');
+            Route::get('/menus/{id}', 'delete')->name('menu.delete');            
             Route::delete('/selected-menus', 'deleteAll')->name('menuall.delete');
         });
 
@@ -197,6 +198,9 @@ Route::group(['prefix' => 'admin'], function(){
             Route::delete('/users', 'destroy')->name('users.destroy');        
             Route::get('/logout', 'logout')->name('users.logout');
         }); 
+
+        //Temp image controller
+        Route::post('/upload-temp-image', [TempImagesController::class, 'create'])->name('temp-images.create');
     });
 
     Route::get('/getSlug', function(Request $request){

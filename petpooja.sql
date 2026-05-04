@@ -894,7 +894,7 @@ CREATE TABLE `products` (
   `product_id` bigint(20) UNSIGNED DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL,
   `price` double(10,2) NOT NULL,
-  `compare_price` double(10,2) DEFAULT NULL,
+  `discounted_price` double(10,2) DEFAULT NULL,
   `veg_nonveg` enum('Veg','Non-veg','Egg') NOT NULL DEFAULT 'Veg',
   `status` int(11) NOT NULL DEFAULT 1,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -906,7 +906,7 @@ CREATE TABLE `products` (
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `name`, `slug`, `category_id`, `menu_id`, `product_id`, `description`, `price`, `compare_price`, `veg_nonveg`, `status`, `created_at`, `updated_at`, `seat_id`) VALUES
+INSERT INTO `products` (`id`, `name`, `slug`, `category_id`, `menu_id`, `product_id`, `description`, `price`, `discounted_price`, `veg_nonveg`, `status`, `created_at`, `updated_at`, `seat_id`) VALUES
 (1, 'Veg Biriyani', 'veg_biriyani', 187, 22, NULL, 'Best Biriyani', 499.00, 599.00, 'Veg', 1, NULL, NULL, 1),
 (7, 'Butter Roti', 'butter_roti', 187, 21, NULL, 'Best Biriyani', 499.00, 599.00, 'Veg', 1, NULL, NULL, 1);
 
@@ -1026,7 +1026,7 @@ CREATE TABLE `seats` (
   `table_slug` varchar(100) NOT NULL,
   `area_id` bigint(20) UNSIGNED DEFAULT NULL,
   `status` enum('available','running','pending','shipped','delivered') NOT NULL DEFAULT 'available',
-  `seating_capacity` int(11) DEFAULT NULL,
+  `capacity` int(11) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1035,7 +1035,7 @@ CREATE TABLE `seats` (
 -- Dumping data for table `seats`
 --
 
-INSERT INTO `seats` (`id`, `table_name`, `table_slug`, `area_id`, `status`, `seating_capacity`, `created_at`, `updated_at`) VALUES
+INSERT INTO `seats` (`id`, `table_name`, `table_slug`, `area_id`, `status`, `capacity`, `created_at`, `updated_at`) VALUES
 (3, 'Table_03', 'table_03', 5, 'running', NULL, NULL, NULL),
 (25, 'Table 02', 'table-02', 6, 'shipped', 2, '2025-01-20 23:03:37', '2025-01-20 23:03:37'),
 (42, 'Table 1', 'table-1', NULL, 'running', 2, '2025-01-28 05:39:44', '2025-01-28 05:39:44'),

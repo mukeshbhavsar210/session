@@ -31,8 +31,8 @@
                                 <div class="col-5">
                                     <div class="right">
                                         ₹ {{ $value->price }}
-                                        @if ($value->compare_price > 0)
-                                            <span class="text-underline"><del>₹ {{ $value->compare_price }}</del></span>
+                                        @if ($value->discounted_price > 0)
+                                            <span class="text-underline"><del>₹ {{ $value->discounted_price }}</del></span>
                                         @endif
                                     </div>
                                 </div>
@@ -75,8 +75,8 @@
                                                 <div class="col-3">
                                                     <div class="product-price">
                                                         <span class="price"> ₹{{ $value->price }}</span>
-                                                        @if ($value->compare_price > 0)
-                                                            <span class="price text-secondary"><del> ₹{{ $value->compare_price }}</del></span>
+                                                        @if ($value->discounted_price > 0)
+                                                            <span class="price text-secondary"><del> ₹{{ $value->discounted_price }}</del></span>
                                                         @endif
                                                     </div>
                                                 </div>

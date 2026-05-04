@@ -13,8 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller {
     public function index(Request $request){
-        $orders = Order::with(['items', 'seat', 'items.product.product_images'])
-            ->withSum('items', 'qty')
+        $orders = Order::with(['items', 'seat', 'items.product.product_images'])            
             ->latest('orders.created_at')
             ->get();
 
