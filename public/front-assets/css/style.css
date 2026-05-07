@@ -637,7 +637,9 @@ html {
 
 .categories-section .menu-category__img li { text-align: center; }
 .categories-section .menu-category__img li p { font-size: 12px; margin-top: 3px; }
-.categories-section .menu-category__img li a.menu_active { background-color: var(--green-dark); border-radius: 5px; padding: 4px; display: block; }
+.categories-section .menu-category__img li a.menu_active,
+.categories-section .menu-category__img li a.home_active { background-color: var(--green-dark); border-radius: 5px; padding: 4px; display: block; }
+ 
 
 
 .categories-section .menu-category__name { font-size: 1rem; display: flex; }
@@ -654,12 +656,8 @@ html {
   contain: content;
 }
 
-.menu-products-section { padding: 10px; position: relative; }
-.menu-products-section .menu-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 50%);
-  gap: 10px 5px;
-}
+.menu-products-section { padding: 15px 10px; position: relative; }
+.menu-products-section .menu-grid { display: grid; grid-template-columns: repeat(2, 48.5%); gap: 10px 15px; }
 
 .menu-products-section .menu-product__item {
   background-color: var(--ik-product-bg-color);
@@ -716,9 +714,6 @@ html {
   white-space: nowrap;
 }
 
-.menu-products-section .menu-product__item__name {
-  font-size: var(--ik-font-size-productTitleFont, .9rem);
-}
 .text-overflow {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -895,8 +890,9 @@ html {
 .active_bottom .sheet-overlay { display: block !important; opacity: 1 !important; visibility:visible !important;}
 
 /* open state */
+.scroll-order { overflow-y: scroll; padding: 20px; height: 400px;}
 .bottom-sheet.active_bottom .sheet-content { transform: translateY(0); }
-.handle { width: 100%; cursor: pointer; display: flex; justify-content: space-between; color:#fff; background-color: #111111; padding:20px 20px 18px 20px; color:#fff; border-radius: 15px 15px 0 0; font-size: 15px; }
+.handle { width: 100%; cursor: pointer; display: flex; justify-content: space-between; color:#fff; background-color: #111111; padding:20px 20px 15px 20px; color:#fff; border-radius: 15px 15px 0 0; font-size: 15px; }
 
 .nav-justified .nav-item .nav-link { padding: 12px; text-transform: uppercase; color: var(--black); }
 .nav-tabs .nav-link.active, .nav-tabs .nav-item.show .nav-link { color: var(--green-dark); background-color: var(--gray-light); }

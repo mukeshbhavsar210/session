@@ -5,7 +5,6 @@ use App\Http\Controllers\admin\ProfileController;
 use App\Http\Controllers\admin\RoleController;
 use App\Http\Controllers\admin\UserController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\admin\AdminLoginController;
 use App\Http\Controllers\admin\AreaController;
 use App\Http\Controllers\admin\HomeController;
 use App\Http\Controllers\admin\CategoryController;
@@ -14,30 +13,24 @@ use App\Http\Controllers\admin\MenuController;
 use App\Http\Controllers\admin\OrderController;
 use App\Http\Controllers\admin\PageController;
 use App\Http\Controllers\admin\ProductController;
-use App\Http\Controllers\admin\ProductImageController;
 use App\Http\Controllers\admin\ProductSubCategoryController;
 use App\Http\Controllers\admin\SeatController;
 use App\Http\Controllers\admin\SettingController;
 use App\Http\Controllers\admin\TempImagesController;
 use App\Http\Controllers\FrontController;
-use App\Http\Controllers\ShopController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 //Front pages routes
-//Route::get('/', [UserController::class, 'show'])->name('front.home');
-
-//Route::get('/menu/{categorySlug?}',[ShopController::class,'category'])->name('front.category');
-Route::get('/menu/{menuSlug?}',[ShopController::class,'index'])->name('front.menu');
-
 Route::controller(FrontController::class)->group(function() {
+    Route::get('/', 'show')->name('front.home');    
+    Route::get('/menu/{menuSlug?}','index')->name('front.menu');
+
     // In your routes/web.php
     Route::post('dining', 'make_order')->name('submit.dining');    
     Route::post('/cart/increase', 'increase')->name('cart.increase');
     Route::post('/cart/decrease', 'decrease')->name('cart.decrease');
     //Route::post('order', 'order_store')->name('submit.order');
-
-    Route::get('/', 'show')->name('front.home');
     Route::get('area/{areaSlug?}', 'restaurant')->name('front.restaurant');
     Route::post('/add-to-wishlist', 'addToWishlist')->name('front.addToWishlist');
     Route::get('/page/{slug}', 'page')->name('front.page');
@@ -55,6 +48,8 @@ Route::controller(FrontController::class)->group(function() {
     Route::delete('remove-from-wishlist', 'removeWishlistItem');
     Route::get('clear-wishlist', 'clearWishlist')->name('clear_wishlist');
 });
+
+//Route::get('/menu/{categorySlug?}',[ShopController::class,'category'])->name('front.category');
 
 Route::get('/dashboard', [HomeController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 

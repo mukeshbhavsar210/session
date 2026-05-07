@@ -19,19 +19,8 @@
 		<div class="header">
 			<div class="header__restaurant-name">
 				<a href="{{ route('front.home') }}" class="logo" >
-					<img style="width: 120px" src="{{ asset('front-assets/images/logo.jpg') }} " alt=""></a>
-					<div class="float-end">
-						@if (Route::has('login'))
-							@auth
-								<a href="{{ url('/dashboard') }}" target="_blank" >Dashboard</a>
-							@else
-								<a href="{{ route('login') }}" target="_blank" >Log in</a>
-								@if (Route::has('register'))
-									<a href="{{ route('register') }}" target="_blank" >Register</a>
-								@endif
-							@endauth
-						@endif
-					</div>
+					<img style="width: 120px" src="{{ asset('front-assets/images/logo.jpg') }} " alt="" />
+				</a>
 			</div>
 		</div>	
 	</header>
@@ -55,12 +44,18 @@
 				@foreach (getCategories() as $value )	
 					<div class="menu-category">	
 						<ul class="menu-category__img">
-							<li >
-								<a href="{{ route('front.menu',[$value->slug])}}" class="{{ request()->is('menu/'.$value->slug) ? 'menu_active' : '' }}" >
+							<li>
+								<a href="{{ route('front.menu',[$value->slug])}}" class="
+									{{
+										(request()->routeIs('front.menu') && request()->segment(2) == $value->slug) ||
+										(request()->routeIs('front.home') && $loop->first)
+										? 'menu_active'
+										: ''
+									}}">
 									@if ($value->image != "")
 										<img src="{{ asset('uploads/category/'.$value->image) }} " alt="">								
 									@endif									
-								</a>
+								</a>								
 								<p>{{ $value->name }}</p>
 							</li>	
 						</ul>
@@ -100,6 +95,36 @@
         })
     }
 
+	// Increase
+    $(document).on('click', '.add-qty', function () {
+        let id = $(this).data('id');
+
+        $.ajax({
+            url: "/cart/increase",
+            type: "POST",
+            data: { id: id },
+            success: function (res) {
+                console.log(res);
+                location.reload(); // for now
+            }
+        });
+    });
+
+    // Decrease
+    $(document).on('click', '.sub-qty', function () {
+        let id = $(this).data('id');
+
+        $.ajax({
+            url: "/cart/decrease",
+            type: "POST",
+            data: { id: id },
+            success: function (res) {
+                console.log(res);
+                location.reload();
+            }
+        });
+    });   
+
 	$(document).ready(function() {
 		var slider_width = $('.orderDetails').height();
 		$('#cartDetails').click(function() {
@@ -124,6 +149,105 @@
 		}
 	});
 
+	 $(document).ready(function () {
+        $('.handle').on('click', function () {
+            $('#bottomSheet').toggleClass('active_bottom');
+        });  
+        $('.sheet-overlay').on('click', function () {
+            $('#bottomSheet').removeClass('active_bottom');
+        }); 
+
+        $('.tab-link').click(function () {
+            var tabID = $(this).data('tab');
+
+            // remove active from all tabs
+            $('.tab-link').removeClass('active');
+            $('.tab-content').removeClass('active');
+
+            // add active to clicked tab
+            $(this).addClass('active');
+            $('.' + tabID).addClass('active');
+        });
+		
+		//Validation
+		function checkFields() {
+			let activeTab = $('.tab-link.active').data('tab');
+
+			let notes      = $.trim($('textarea[name="notes"]').val());
+			let dineinTime = $('select[name="dinein_time"]').val();
+			let seatId     = $('select[name="seat_id"]').val();
+
+			let time       = $('select[name="time"]').val();
+			let name       = $.trim($('input[name="customer_name"]').val());
+			let email      = $.trim($('input[name="customer_email"]').val());
+			let phone      = $.trim($('input[name="customer_phone"]').val());
+			let address    = $.trim($('textarea[name="address"]').val());
+
+			let valid = false;
+
+			// Dine in
+			if (activeTab == 'tab1') {
+
+				if (
+					notes !== '' &&
+					dineinTime !== '' &&
+					seatId !== ''
+				) {
+					valid = true;
+				}
+			}
+
+			// Takeaway
+			else if (activeTab == 'tab2') {
+
+				if (
+					notes !== '' &&
+					time !== '' &&
+					name !== '' &&
+					email !== '' &&
+					phone !== ''
+				) {
+					valid = true;
+				}
+			}
+
+			// Delivery
+			else if (activeTab == 'tab3') {
+
+				if (
+					notes !== '' &&
+					time !== '' &&
+					name !== '' &&
+					email !== '' &&
+					phone !== '' &&
+					address !== ''
+				) {
+					valid = true;
+				}
+			}
+
+			if (valid) {
+				$('.btn-primary').removeClass('disabled');
+			} else {
+				$('.btn-primary').addClass('disabled');
+			}
+		}
+
+		// Inputs / textarea / select
+		$('input, textarea, select').on('keyup change', checkFields);
+
+		// Custom tab click
+		$('.tab-link').on('click', function () {
+
+			$('.tab-link').removeClass('active');
+			$(this).addClass('active');
+
+			checkFields();
+		});
+
+		// Initial check
+		checkFields();
+	});
 </script>
 
 @yield('customJs')
