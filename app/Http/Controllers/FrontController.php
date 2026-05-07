@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Area;
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -15,17 +16,94 @@ use Illuminate\Support\Facades\DB;
 
 class FrontController extends Controller {
     public function show() {
-        $products = Product::orderBy('id','DESC')->get();
-        $areas = Area::orderBy('id','DESC')->with('seat')->orderBy('id','DESC')->get();
-        $seats = Seat::orderBy('id','DESC')->get();        
-      
-        $data = [
-            'products'=> $products,
-            'areas'=> $areas,
-            'seats'=> $seats,
-        ];
+        $popularCategory = Category::where('name', 'Popular')
+            ->with(['products' => function ($query) {
+                $query->latest();
+            }])
+            ->first();
 
-        return view('front.home.index', $data);        
+        $products = Product::with('category')->latest()->get();
+        $areas = Area::with('seat')->latest()->get();
+        $seats = Seat::with('area')->latest()->get();
+
+        return view('front.home.index', [
+            'products' => $products,
+            'popularProducts' => $popularCategory?->products ?? collect(),
+            'popularCategory' => $popularCategory,
+            'areas' => $areas,
+            'seats' => $seats,
+        ]);
+    }
+
+    public function index(Request $request, $menuSlug = null) {
+        // Categories with menus
+        $categories = getCategories();
+        $seats = Seat::orderBy('id','DESC')->get();  
+
+        // ✅ Default to 'popular' if no slug
+        if (empty($menuSlug)) {
+            $menuSlug = Category::whereRaw("LOWER(name) = 'popular'")
+                ->value('slug');
+        }   
+
+        // Base query
+        $products = Product::where('status', 1);
+
+        // ✅ Filter by menu slug (ONLY if exists)
+        if (!empty($menuSlug)) {
+            $products->whereHas('category', function ($q) use ($menuSlug) {
+                $q->where('slug', $menuSlug);
+            });
+        }
+
+        // ✅ Price filter
+        if ($request->filled('price_min') && $request->filled('price_max')) {
+            $min = (int) $request->price_min;
+            $max = (int) $request->price_max;
+
+            if ($max == 1000) {
+                $max = 1000000; // max cap
+            }
+
+            $products->whereBetween('price', [$min, $max]);
+        }
+
+        // ✅ Search
+        if ($request->filled('search')) {
+            $products->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        // ✅ Sorting
+        switch ($request->get('sort')) {
+            case 'latest':
+                $products->orderBy('id', 'DESC');
+                break;
+
+            case 'price_asc':
+                $products->orderBy('price', 'ASC');
+                break;
+
+            case 'price_desc':
+                $products->orderBy('price', 'DESC');
+                break;
+
+            default:
+                $products->orderBy('id', 'DESC');
+                break;
+        }
+
+        // Pagination
+        $products = $products->orderBy('id', 'DESC')->paginate(10);
+
+        // Pass data
+        return view('front.shop.index', [
+            'categories'   => $categories,
+            'products'     => $products,
+            'seats'        => $seats,
+            'menuSelected' => $menuSlug, 
+            'priceMax'     => $request->price_max ?? 1000,
+            'priceMin'     => $request->price_min ?? 0,
+        ]);
     }
 
     //Wishlist page
@@ -40,9 +118,8 @@ class FrontController extends Controller {
 
 
     //Slug
-    public function index(Request $request, $areaSlug = null,) {
+    public function area_index(Request $request, $areaSlug = null,) {
         $areaSlug = ' ';
-
         $products = Product::orderBy('id','DESC')->get();
         $areas = Area::orderBy('id','DESC')->with('seating')->orderBy('id','DESC')->get();
         $seat_number = Seat::orderBy('id','DESC')->get();
